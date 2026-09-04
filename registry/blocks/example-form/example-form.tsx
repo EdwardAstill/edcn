@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import * as React from "react"
+import * as React from "react";
 import {
   Card,
   CardTitle,
@@ -8,21 +8,21 @@ import {
   CardDescription,
   CardContent,
   CardFooter,
-} from "@/registry/base-nova/ui/card"
-import { Input } from "@/registry/base-nova/ui/input"
-import { Label } from "@/registry/base-nova/ui/label"
-import { Button } from "@/registry/base-nova/ui/button"
-import { Textarea } from "@/registry/base-nova/ui/textarea"
-import { z } from "zod"
+} from "@/registry/ui/card";
+import { Input } from "@/registry/ui/input";
+import { Label } from "@/registry/ui/label";
+import { Button } from "@/registry/ui/button";
+import { Textarea } from "@/registry/ui/textarea";
+import { z } from "zod";
 
 const exampleFormSchema = z.object({
   name: z.string().min(1),
   email: z.string().email(),
   message: z.string().min(1),
-})
+});
 
 export function ExampleForm() {
-  const [pending, setPending] = React.useState(false)
+  const [pending, setPending] = React.useState(false);
   const [state, setState] = React.useState({
     defaultValues: {
       name: "",
@@ -35,34 +35,34 @@ export function ExampleForm() {
       email: "",
       message: "",
     },
-  })
+  });
 
   const handleSubmit = React.useCallback(
     (e: React.FormEvent<HTMLFormElement>) => {
-      e.preventDefault()
-      setPending(true)
+      e.preventDefault();
+      setPending(true);
 
-      const formData = new FormData(e.target as HTMLFormElement)
-      const data = Object.fromEntries(formData.entries())
-      const result = exampleFormSchema.safeParse(data)
+      const formData = new FormData(e.target as HTMLFormElement);
+      const data = Object.fromEntries(formData.entries());
+      const result = exampleFormSchema.safeParse(data);
 
       if (!result.success) {
         setState({
           ...state,
           errors: Object.fromEntries(
             Object.entries(result.error.flatten().fieldErrors).map(
-              ([key, value]) => [key, value?.[0] ?? ""]
-            )
+              ([key, value]) => [key, value?.[0] ?? ""],
+            ),
           ) as Record<keyof typeof state.errors, string>,
-        })
-        setPending(false)
-        return
+        });
+        setPending(false);
+        return;
       }
 
-      setPending(false)
+      setPending(false);
     },
-    [state]
-  )
+    [state],
+  );
 
   return (
     <form onSubmit={handleSubmit} className="w-full max-w-sm">
@@ -160,5 +160,5 @@ export function ExampleForm() {
         </CardFooter>
       </Card>
     </form>
-  )
+  );
 }

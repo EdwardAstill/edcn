@@ -5,6 +5,8 @@ const server = Bun.serve({
   development: true,
   routes: {
     "/": index,
+    // Serve generated registry JSON from public/r (e.g. /r/registry.json)
+    "/r/*": { dir: "./public/r" },
   },
 });
 

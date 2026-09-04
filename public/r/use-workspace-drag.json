@@ -1,0 +1,17 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "use-workspace-drag",
+  "title": "Use Workspace Drag",
+  "description": "Drag & drop context for docking views; live drop preview state.",
+  "registryDependencies": [
+    "workspace-core"
+  ],
+  "files": [
+    {
+      "path": "registry/hooks/use-workspace-drag.ts",
+      "content": "/**\n * Workspace drag & drop context — interaction state for docking views by\n * dragging tabs. Deliberately NOT part of the reducer: an in-flight drag is\n * UI state, not workspace content (no persistence, no history entry).\n *\n * Behavior ported from tiling-tabs: native HTML5 drag from tabs, live drop\n * preview via dropTarget {stackId, edge}, dispatch on drop.\n */\n\nimport * as React from \"react\";\n\nimport { computeDropEdge } from \"@/registry/lib/workspace/drop-edge\";\nimport type { DropEdge } from \"@/registry/lib/workspace/drop-edge\";\n\nexport interface WorkspaceDragInfo {\n  viewId: string;\n  sourceStackId: string;\n}\n\nexport interface WorkspaceDropTarget {\n  stackId: string;\n  edge: DropEdge;\n}\n\ninterface WorkspaceDragContextValue {\n  drag: WorkspaceDragInfo | null;\n  dropTarget: WorkspaceDropTarget | null;\n  beginDrag(info: WorkspaceDragInfo, dataTransfer?: DataTransfer | null): void;\n  updateDropTarget(\n    stackId: string,\n    point: { x: number; y: number },\n    element: Element,\n  ): void;\n  clearDropTarget(): void;\n  endDrag(): void;\n}\n\nconst WorkspaceDragContext =\n  React.createContext<WorkspaceDragContextValue | null>(null);\n\nexport function WorkspaceDragProvider({\n  children,\n}: {\n  children: React.ReactNode;\n}) {\n  const [drag, setDrag] = React.useState<WorkspaceDragInfo | null>(null);\n  const [dropTarget, setDropTarget] =\n    React.useState<WorkspaceDropTarget | null>(null);\n\n  const value = React.useMemo<WorkspaceDragContextValue>(\n    () => ({\n      drag,\n      dropTarget,\n      beginDrag(info, dataTransfer) {\n        if (dataTransfer) {\n          dataTransfer.effectAllowed = \"move\";\n          dataTransfer.setData(\"text/plain\", info.viewId);\n        }\n        setDrag(info);\n      },\n      updateDropTarget(stackId, point, element) {\n        setDropTarget({\n          stackId,\n          edge: computeDropEdge(point, element.getBoundingClientRect()),\n        });\n      },\n      clearDropTarget() {\n        setDropTarget(null);\n      },\n      endDrag() {\n        setDrag(null);\n        setDropTarget(null);\n      },\n    }),\n    [drag, dropTarget],\n  );\n\n  // createElement keeps this a .ts file (no JSX) while providing context.\n  return React.createElement(\n    WorkspaceDragContext.Provider,\n    { value },\n    children,\n  );\n}\n\n/** Null when no provider is mounted — drag sources/targets then no-op. */\nexport function useWorkspaceDrag(): WorkspaceDragContextValue | null {\n  return React.useContext(WorkspaceDragContext);\n}\n",
+      "type": "registry:hook"
+    }
+  ],
+  "type": "registry:hook"
+}

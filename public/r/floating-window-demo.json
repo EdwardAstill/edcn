@@ -1,0 +1,18 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "floating-window-demo",
+  "title": "Floating Window Demo",
+  "description": "Draggable, resizable floating windows.",
+  "registryDependencies": [
+    "floating-window",
+    "button"
+  ],
+  "files": [
+    {
+      "path": "registry/blocks/floating-window-demo/floating-window-demo.tsx",
+      "content": "import * as React from \"react\";\n\nimport { FloatingWindow } from \"@/registry/ui/floating-window\";\nimport { Button } from \"@/registry/ui/button\";\n\nexport function FloatingWindowDemo() {\n  return (\n    <div className=\"absolute inset-0\">\n      <FloatingWindow\n        title=\"Notes\"\n        defaultPosition={{ x: 16, y: 16 }}\n        defaultSize={{ width: 280, height: 170 }}\n      >\n        <p className=\"text-sm text-muted-foreground\">\n          Drag the title bar to move me. Grab any edge or corner to resize.\n        </p>\n      </FloatingWindow>\n      <FloatingWindow\n        title=\"Counter\"\n        defaultPosition={{ x: 340, y: 60 }}\n        defaultSize={{ width: 230, height: 160 }}\n        minWidth={190}\n        minHeight={130}\n      >\n        <Counter />\n      </FloatingWindow>\n    </div>\n  );\n}\n\nfunction Counter() {\n  const [count, setCount] = React.useState(0);\n\n  return (\n    <div className=\"flex h-full flex-col items-center justify-center gap-3\">\n      <span className=\"text-2xl font-bold tabular-nums\">{count}</span>\n      <div className=\"flex gap-2\">\n        <Button\n          variant=\"outline\"\n          size=\"sm\"\n          onClick={() => setCount((count) => count - 1)}\n        >\n          -1\n        </Button>\n        <Button size=\"sm\" onClick={() => setCount((count) => count + 1)}>\n          +1\n        </Button>\n      </div>\n    </div>\n  );\n}\n",
+      "type": "registry:component"
+    }
+  ],
+  "type": "registry:component"
+}

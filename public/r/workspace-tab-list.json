@@ -1,0 +1,18 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "workspace-tab-list",
+  "title": "Workspace Tab List",
+  "description": "Tab strip for a workspace stack; draggable tabs, activates and closes views.",
+  "registryDependencies": [
+    "use-workspace",
+    "use-workspace-drag"
+  ],
+  "files": [
+    {
+      "path": "registry/ui/workspace-tab-list.tsx",
+      "content": "/**\n * Tab strip for a single stack. Fully placement-agnostic: it reads its stack\n * from workspace state and works the same inside a split, a floating window,\n * or a popout.\n */\n\nimport * as React from \"react\";\n\nimport { cn } from \"@/lib/utils\";\nimport {\n  useWorkspaceDispatch,\n  useWorkspaceState,\n} from \"@/registry/hooks/use-workspace\";\nimport { useWorkspaceDrag } from \"@/registry/hooks/use-workspace-drag\";\n\nexport interface WorkspaceTabListProps\n  extends React.HTMLAttributes<HTMLDivElement> {\n  stackId: string;\n}\n\nexport function WorkspaceTabList({\n  stackId,\n  className,\n  ...props\n}: WorkspaceTabListProps) {\n  const state = useWorkspaceState();\n  const dispatch = useWorkspaceDispatch();\n  const dragContext = useWorkspaceDrag();\n\n  const stack = state.stacks[stackId];\n  if (!stack) return null;\n\n  function startDrag(event: React.DragEvent<HTMLDivElement>, viewId: string) {\n    if (!dragContext) return;\n    dragContext.beginDrag(\n      { viewId, sourceStackId: stackId },\n      event.dataTransfer,\n    );\n  }\n\n  return (\n    <div\n      role=\"tablist\"\n      className={cn(\n        \"flex h-9 items-stretch gap-0.5 overflow-x-auto border-b bg-muted/40 px-1\",\n        className,\n      )}\n      {...props}\n    >\n      {stack.viewIds.map((viewId) => {\n        const view = state.views[viewId];\n        if (!view) return null;\n        const active = stack.activeViewId === viewId;\n        return (\n          <div\n            key={viewId}\n            role=\"tab\"\n            aria-selected={active}\n            tabIndex={0}\n            draggable\n            onDragStart={(event) => startDrag(event, viewId)}\n            onDragEnd={() => dragContext?.endDrag()}\n            onClick={() => dispatch({ type: \"view/activate\", viewId })}\n            onKeyDown={(event) => {\n              if (event.key === \"Enter\" || event.key === \" \") {\n                dispatch({ type: \"view/activate\", viewId });\n              }\n            }}\n            className={cn(\n              \"group flex max-w-48 shrink-0 cursor-pointer items-center gap-1.5 rounded-md px-2.5 text-sm outline-none select-none\",\n              \"focus-visible:ring-ring/50 focus-visible:ring-2\",\n              active\n                ? \"bg-background text-foreground shadow-xs\"\n                : \"text-muted-foreground hover:bg-accent/60 hover:text-foreground\",\n            )}\n          >\n            <span className=\"truncate\">{view.title}</span>\n            <button\n              type=\"button\"\n              aria-label={`Close ${view.title}`}\n              onClick={(event) => {\n                event.stopPropagation();\n                dispatch({ type: \"view/close\", viewId });\n              }}\n              className={cn(\n                \"ml-0.5 flex size-4 shrink-0 items-center justify-center rounded-sm text-muted-foreground/60\",\n                \"opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100\",\n                \"hover:bg-accent hover:text-foreground\",\n                active && \"opacity-70\",\n              )}\n            >\n              ×\n            </button>\n          </div>\n        );\n      })}\n    </div>\n  );\n}\n",
+      "type": "registry:ui"
+    }
+  ],
+  "type": "registry:ui"
+}

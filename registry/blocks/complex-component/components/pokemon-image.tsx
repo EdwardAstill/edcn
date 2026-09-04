@@ -1,6 +1,6 @@
 "use client";
 
-import { usePokemonImage } from "@/registry/base-nova/blocks/complex-component/hooks/use-pokemon";
+import { usePokemonImage } from "@/registry/blocks/complex-component/hooks/use-pokemon";
 
 export function PokemonImage({
   name,

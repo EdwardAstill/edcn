@@ -2,12 +2,12 @@ import { useEffect, useState } from "react";
 import {
   getPokemon,
   getPokemonList,
-} from "@/registry/base-nova/blocks/complex-component/lib/pokemon";
-import { PokemonImage } from "@/registry/base-nova/blocks/complex-component/components/pokemon-image";
-import { Card, CardContent } from "@/registry/base-nova/ui/card";
+} from "@/registry/blocks/complex-component/lib/pokemon";
+import { PokemonImage } from "@/registry/blocks/complex-component/components/pokemon-image";
+import { Card, CardContent } from "@/registry/ui/card";
 
-// Preview-only client version of the complex-component block.
-// The registry item (pokemon-list.tsx) is an async server component,
+// Client-side version of the complex-component block for browser previews.
+// The block's entry (pokemon-list.tsx) is an async server component,
 // which only renders inside RSC hosts like Next.js.
 
 export function PokemonGrid() {
