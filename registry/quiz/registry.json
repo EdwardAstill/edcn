@@ -1,0 +1,75 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "items": [
+    {
+      "name": "quiz",
+      "type": "registry:block",
+      "title": "Quiz",
+      "description": "Standalone, uncontrolled quiz component for React 19.",
+      "dependencies": [
+        "@shadcn/react@^0.3.0",
+        "clsx@^2.1.1",
+        "react@^19.0.0",
+        "react-dom@^19.0.0",
+        "tailwind-merge@^3.6.0"
+      ],
+      "files": [
+        {
+          "path": "components/Quiz.tsx",
+          "type": "registry:file",
+          "target": "@components/quiz/components/Quiz.tsx"
+        },
+        {
+          "path": "components/QuizStep.tsx",
+          "type": "registry:file",
+          "target": "@components/quiz/components/QuizStep.tsx"
+        },
+        {
+          "path": "components/QuizResults.tsx",
+          "type": "registry:file",
+          "target": "@components/quiz/components/QuizResults.tsx"
+        },
+        {
+          "path": "ui/Questionnaire.tsx",
+          "type": "registry:file",
+          "target": "@components/quiz/ui/Questionnaire.tsx"
+        },
+        {
+          "path": "ui/primitives.tsx",
+          "type": "registry:file",
+          "target": "@components/quiz/ui/primitives.tsx"
+        },
+        {
+          "path": "lib/model.ts",
+          "type": "registry:file",
+          "target": "@components/quiz/lib/model.ts"
+        },
+        {
+          "path": "lib/grading.ts",
+          "type": "registry:file",
+          "target": "@components/quiz/lib/grading.ts"
+        },
+        {
+          "path": "lib/session.ts",
+          "type": "registry:file",
+          "target": "@components/quiz/lib/session.ts"
+        },
+        {
+          "path": "lib/validation.ts",
+          "type": "registry:file",
+          "target": "@components/quiz/lib/validation.ts"
+        },
+        {
+          "path": "lib/cn.ts",
+          "type": "registry:file",
+          "target": "@components/quiz/lib/cn.ts"
+        },
+        {
+          "path": "styles/styles.css",
+          "type": "registry:file",
+          "target": "@components/quiz/styles/styles.css"
+        }
+      ]
+    }
+  ]
+}

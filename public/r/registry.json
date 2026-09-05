@@ -4,350 +4,658 @@
   "homepage": "https://github.com/EdwardAstill/edcn",
   "items": [
     {
-      "name": "hello-world",
-      "type": "registry:component",
-      "title": "Hello World",
-      "description": "A simple hello world component",
-      "registryDependencies": [
-        "button"
-      ],
-      "files": [
-        {
-          "path": "registry/blocks/hello-world/hello-world.tsx",
-          "type": "registry:component"
-        }
-      ]
-    },
-    {
-      "name": "example-form",
-      "type": "registry:component",
-      "title": "Example Form",
-      "description": "A contact form with Zod validation.",
-      "dependencies": [
-        "zod"
-      ],
-      "registryDependencies": [
-        "button",
-        "input",
-        "label",
-        "textarea",
-        "card"
-      ],
-      "files": [
-        {
-          "path": "registry/blocks/example-form/example-form.tsx",
-          "type": "registry:component"
-        }
-      ]
-    },
-    {
-      "name": "complex-component",
-      "type": "registry:component",
-      "title": "Complex Component",
-      "description": "A complex component showing hooks, libs and components.",
-      "registryDependencies": [
-        "card"
-      ],
-      "files": [
-        {
-          "path": "registry/blocks/complex-component/pokemon-list.tsx",
-          "type": "registry:component"
-        },
-        {
-          "path": "registry/blocks/complex-component/pokemon-grid.tsx",
-          "type": "registry:component"
-        },
-        {
-          "path": "registry/blocks/complex-component/components/pokemon-card.tsx",
-          "type": "registry:component"
-        },
-        {
-          "path": "registry/blocks/complex-component/components/pokemon-image.tsx",
-          "type": "registry:component"
-        },
-        {
-          "path": "registry/blocks/complex-component/lib/pokemon.ts",
-          "type": "registry:lib"
-        },
-        {
-          "path": "registry/blocks/complex-component/hooks/use-pokemon.ts",
-          "type": "registry:hook"
-        }
-      ]
-    },
-    {
-      "name": "floating-window",
-      "type": "registry:ui",
-      "title": "Floating Window",
-      "description": "A draggable, resizable floating window.",
-      "files": [
-        {
-          "path": "registry/ui/floating-window.tsx",
-          "type": "registry:ui"
-        }
-      ]
-    },
-    {
-      "name": "floating-window-demo",
-      "type": "registry:component",
-      "title": "Floating Window Demo",
-      "description": "Draggable, resizable floating windows.",
-      "registryDependencies": [
-        "floating-window",
-        "button"
-      ],
-      "files": [
-        {
-          "path": "registry/blocks/floating-window-demo/floating-window-demo.tsx",
-          "type": "registry:component"
-        }
-      ]
-    },
-    {
       "name": "workspace-core",
-      "type": "registry:lib",
       "title": "Workspace Core",
       "description": "Framework-agnostic workspace state: types, reducer, store, and initial-state factory.",
+      "registryDependencies": [],
       "files": [
         {
-          "path": "registry/lib/workspace/types.ts",
-          "type": "registry:lib"
+          "path": "registry/workspace/lib/types.ts",
+          "type": "registry:lib",
+          "target": "@lib/workspace/types.ts"
         },
         {
-          "path": "registry/lib/workspace/ids.ts",
-          "type": "registry:lib"
+          "path": "registry/workspace/lib/ids.ts",
+          "type": "registry:lib",
+          "target": "@lib/workspace/ids.ts"
         },
         {
-          "path": "registry/lib/workspace/actions.ts",
-          "type": "registry:lib"
+          "path": "registry/workspace/lib/actions.ts",
+          "type": "registry:lib",
+          "target": "@lib/workspace/actions.ts"
         },
         {
-          "path": "registry/lib/workspace/reducer.ts",
-          "type": "registry:lib"
+          "path": "registry/workspace/lib/reducer.ts",
+          "type": "registry:lib",
+          "target": "@lib/workspace/reducer.ts"
         },
         {
-          "path": "registry/lib/workspace/model/record.ts",
-          "type": "registry:lib"
+          "path": "registry/workspace/lib/model/record.ts",
+          "type": "registry:lib",
+          "target": "@lib/workspace/model/record.ts"
         },
         {
-          "path": "registry/lib/workspace/model/stack.ts",
-          "type": "registry:lib"
+          "path": "registry/workspace/lib/model/stack.ts",
+          "type": "registry:lib",
+          "target": "@lib/workspace/model/stack.ts"
         },
         {
-          "path": "registry/lib/workspace/model/layout.ts",
-          "type": "registry:lib"
+          "path": "registry/workspace/lib/model/layout.ts",
+          "type": "registry:lib",
+          "target": "@lib/workspace/model/layout.ts"
         },
         {
-          "path": "registry/lib/workspace/model/surface.ts",
-          "type": "registry:lib"
+          "path": "registry/workspace/lib/model/surface.ts",
+          "type": "registry:lib",
+          "target": "@lib/workspace/model/surface.ts"
         },
         {
-          "path": "registry/lib/workspace/store.ts",
-          "type": "registry:lib"
+          "path": "registry/workspace/lib/store.ts",
+          "type": "registry:lib",
+          "target": "@lib/workspace/store.ts"
         },
         {
-          "path": "registry/lib/workspace/factory.ts",
-          "type": "registry:lib"
+          "path": "registry/workspace/lib/factory.ts",
+          "type": "registry:lib",
+          "target": "@lib/workspace/factory.ts"
         },
         {
-          "path": "registry/lib/workspace/config.ts",
-          "type": "registry:lib"
+          "path": "registry/workspace/lib/config.ts",
+          "type": "registry:lib",
+          "target": "@lib/workspace/config.ts"
         },
         {
-          "path": "registry/lib/workspace/keymap.ts",
-          "type": "registry:lib"
+          "path": "registry/workspace/lib/keymap.ts",
+          "type": "registry:lib",
+          "target": "@lib/workspace/keymap.ts"
         },
         {
-          "path": "registry/lib/workspace/drop-edge.ts",
-          "type": "registry:lib"
+          "path": "registry/workspace/lib/drop-edge.ts",
+          "type": "registry:lib",
+          "target": "@lib/workspace/drop-edge.ts"
         },
         {
-          "path": "registry/lib/workspace/persistence.ts",
-          "type": "registry:lib"
+          "path": "registry/workspace/lib/persistence.ts",
+          "type": "registry:lib",
+          "target": "@lib/workspace/persistence.ts"
         }
-      ]
+      ],
+      "type": "registry:lib"
     },
     {
       "name": "use-workspace",
-      "type": "registry:hook",
       "title": "Use Workspace",
       "description": "React bindings for the workspace store: provider and hooks.",
       "registryDependencies": [
-        "workspace-core",
-        "use-workspace-drag"
+        "EdwardAstill/edcn/workspace-core",
+        "EdwardAstill/edcn/use-workspace-drag"
       ],
       "files": [
         {
-          "path": "registry/hooks/use-workspace.ts",
-          "type": "registry:hook"
+          "path": "registry/workspace/hooks/use-workspace.ts",
+          "type": "registry:hook",
+          "target": "@hooks/workspace/use-workspace.ts"
         },
         {
-          "path": "registry/hooks/use-workspace-keymap.ts",
-          "type": "registry:hook"
+          "path": "registry/workspace/hooks/use-workspace-keymap.ts",
+          "type": "registry:hook",
+          "target": "@hooks/workspace/use-workspace-keymap.ts"
         }
-      ]
+      ],
+      "type": "registry:hook"
     },
     {
       "name": "use-view-working-state",
-      "type": "registry:hook",
       "title": "Use View Working State",
       "description": "Per-view state keyed by view id; survives tabs, splits, floats, and docks.",
       "registryDependencies": [],
       "files": [
         {
-          "path": "registry/hooks/use-view-working-state.ts",
-          "type": "registry:hook"
+          "path": "registry/workspace/hooks/use-view-working-state.ts",
+          "type": "registry:hook",
+          "target": "@hooks/workspace/use-view-working-state.ts"
         }
-      ]
+      ],
+      "type": "registry:hook"
     },
     {
       "name": "use-workspace-drag",
-      "type": "registry:hook",
       "title": "Use Workspace Drag",
       "description": "Drag & drop context for docking views; live drop preview state.",
       "registryDependencies": [
-        "workspace-core"
+        "EdwardAstill/edcn/workspace-core"
       ],
       "files": [
         {
-          "path": "registry/hooks/use-workspace-drag.ts",
-          "type": "registry:hook"
+          "path": "registry/workspace/hooks/use-workspace-drag.ts",
+          "type": "registry:hook",
+          "target": "@hooks/workspace/use-workspace-drag.ts"
         }
-      ]
+      ],
+      "type": "registry:hook"
     },
     {
       "name": "workspace-drop-overlay",
-      "type": "registry:ui",
       "title": "Workspace Drop Overlay",
       "description": "Drop preview overlay: center = tab, edges = split at that edge.",
+      "registryDependencies": [
+        "EdwardAstill/edcn/workspace-core"
+      ],
       "files": [
         {
-          "path": "registry/ui/workspace-drop-overlay.tsx",
-          "type": "registry:ui"
+          "path": "registry/workspace/ui/workspace-drop-overlay.tsx",
+          "type": "registry:ui",
+          "target": "@ui/workspace/workspace-drop-overlay.tsx"
         }
-      ]
+      ],
+      "type": "registry:ui"
     },
     {
       "name": "workspace-tab-list",
-      "type": "registry:ui",
       "title": "Workspace Tab List",
       "description": "Tab strip for a workspace stack; draggable tabs, activates and closes views.",
       "registryDependencies": [
-        "use-workspace",
-        "use-workspace-drag"
+        "EdwardAstill/edcn/use-workspace",
+        "EdwardAstill/edcn/use-workspace-drag"
       ],
       "files": [
         {
-          "path": "registry/ui/workspace-tab-list.tsx",
-          "type": "registry:ui"
+          "path": "registry/workspace/ui/workspace-tab-list.tsx",
+          "type": "registry:ui",
+          "target": "@ui/workspace/workspace-tab-list.tsx"
         }
-      ]
+      ],
+      "type": "registry:ui"
     },
     {
       "name": "workspace-stack",
-      "type": "registry:ui",
       "title": "Workspace Stack",
       "description": "Renders one stack: tab strip plus the active view; drop target for docking.",
       "registryDependencies": [
-        "workspace-tab-list",
-        "use-workspace",
-        "use-workspace-drag",
-        "workspace-drop-overlay"
+        "EdwardAstill/edcn/workspace-tab-list",
+        "EdwardAstill/edcn/use-workspace",
+        "EdwardAstill/edcn/use-workspace-drag",
+        "EdwardAstill/edcn/workspace-drop-overlay"
       ],
       "files": [
         {
-          "path": "registry/ui/workspace-stack.tsx",
-          "type": "registry:ui"
+          "path": "registry/workspace/ui/workspace-stack.tsx",
+          "type": "registry:ui",
+          "target": "@ui/workspace/workspace-stack.tsx"
         }
-      ]
+      ],
+      "type": "registry:ui"
     },
     {
       "name": "workspace-resize-handle",
-      "type": "registry:ui",
       "title": "Workspace Resize Handle",
       "description": "Draggable divider between split children; dispatches layout/resize.",
       "registryDependencies": [
-        "use-workspace"
+        "EdwardAstill/edcn/use-workspace"
       ],
       "files": [
         {
-          "path": "registry/ui/workspace-resize-handle.tsx",
-          "type": "registry:ui"
+          "path": "registry/workspace/ui/workspace-resize-handle.tsx",
+          "type": "registry:ui",
+          "target": "@ui/workspace/workspace-resize-handle.tsx"
         }
-      ]
+      ],
+      "type": "registry:ui"
     },
     {
       "name": "workspace-layout",
-      "type": "registry:ui",
       "title": "Workspace Layout",
       "description": "Recursively renders a workspace layout tree with resizable ratio-based splits.",
       "registryDependencies": [
-        "workspace-stack",
-        "workspace-resize-handle"
+        "EdwardAstill/edcn/workspace-stack",
+        "EdwardAstill/edcn/workspace-resize-handle"
       ],
       "files": [
         {
-          "path": "registry/ui/workspace-layout.tsx",
-          "type": "registry:ui"
+          "path": "registry/workspace/ui/workspace-layout.tsx",
+          "type": "registry:ui",
+          "target": "@ui/workspace/workspace-layout.tsx"
         }
-      ]
+      ],
+      "type": "registry:ui"
     },
     {
-      "name": "workspace-demo",
-      "type": "registry:component",
-      "title": "Workspace Demo",
-      "description": "IDE-style tiled workspace: views, tab stacks, splits, floating windows, keymap, and a state inspector.",
+      "name": "workspace",
+      "title": "Workspace",
+      "description": "Assembled IDE-style workspace: the Workspace component with tiled layouts, floating windows, popouts, and a keymap.",
       "registryDependencies": [
-        "workspace-core",
-        "use-workspace",
-        "workspace-tab-list",
-        "workspace-stack",
-        "workspace-split",
-        "workspace-resize-handle",
-        "floating-window",
-        "use-view-state",
-        "use-workspace-drag",
-        "workspace-drop-overlay",
+        "EdwardAstill/edcn/workspace-core",
+        "EdwardAstill/edcn/use-workspace",
+        "EdwardAstill/edcn/workspace-tab-list",
+        "EdwardAstill/edcn/workspace-stack",
+        "EdwardAstill/edcn/workspace-layout",
+        "EdwardAstill/edcn/workspace-resize-handle",
+        "EdwardAstill/edcn/floating-window",
+        "EdwardAstill/edcn/use-view-working-state",
+        "EdwardAstill/edcn/use-workspace-drag",
+        "EdwardAstill/edcn/workspace-drop-overlay"
+      ],
+      "files": [
+        {
+          "path": "registry/workspace/components/workspace.tsx",
+          "type": "registry:component",
+          "target": "@components/workspace/workspace.tsx"
+        },
+        {
+          "path": "registry/workspace/components/workspace-tiled.tsx",
+          "type": "registry:component",
+          "target": "@components/workspace/workspace-tiled.tsx"
+        },
+        {
+          "path": "registry/workspace/components/workspace-floating.tsx",
+          "type": "registry:component",
+          "target": "@components/workspace/workspace-floating.tsx"
+        },
+        {
+          "path": "registry/workspace/components/workspace-popouts.tsx",
+          "type": "registry:component",
+          "target": "@components/workspace/workspace-popouts.tsx"
+        }
+      ],
+      "type": "registry:block"
+    },
+    {
+      "name": "floating-window",
+      "title": "Floating Window",
+      "description": "A draggable, resizable floating window.",
+      "registryDependencies": [
+        "EdwardAstill/edcn/workspace-core"
+      ],
+      "files": [
+        {
+          "path": "registry/workspace/ui/floating-window.tsx",
+          "type": "registry:ui",
+          "target": "@ui/workspace/floating-window.tsx"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "quiz",
+      "title": "Quiz",
+      "description": "Standalone, uncontrolled quiz component for React 19.",
+      "dependencies": [
+        "@shadcn/react@^0.3.0",
+        "clsx@^2.1.1",
+        "react@^19.0.0",
+        "react-dom@^19.0.0",
+        "tailwind-merge@^3.6.0"
+      ],
+      "files": [
+        {
+          "path": "registry/quiz/components/Quiz.tsx",
+          "type": "registry:file",
+          "target": "@components/quiz/components/Quiz.tsx"
+        },
+        {
+          "path": "registry/quiz/components/QuizStep.tsx",
+          "type": "registry:file",
+          "target": "@components/quiz/components/QuizStep.tsx"
+        },
+        {
+          "path": "registry/quiz/components/QuizResults.tsx",
+          "type": "registry:file",
+          "target": "@components/quiz/components/QuizResults.tsx"
+        },
+        {
+          "path": "registry/quiz/ui/Questionnaire.tsx",
+          "type": "registry:file",
+          "target": "@components/quiz/ui/Questionnaire.tsx"
+        },
+        {
+          "path": "registry/quiz/ui/primitives.tsx",
+          "type": "registry:file",
+          "target": "@components/quiz/ui/primitives.tsx"
+        },
+        {
+          "path": "registry/quiz/lib/model.ts",
+          "type": "registry:file",
+          "target": "@components/quiz/lib/model.ts"
+        },
+        {
+          "path": "registry/quiz/lib/grading.ts",
+          "type": "registry:file",
+          "target": "@components/quiz/lib/grading.ts"
+        },
+        {
+          "path": "registry/quiz/lib/session.ts",
+          "type": "registry:file",
+          "target": "@components/quiz/lib/session.ts"
+        },
+        {
+          "path": "registry/quiz/lib/validation.ts",
+          "type": "registry:file",
+          "target": "@components/quiz/lib/validation.ts"
+        },
+        {
+          "path": "registry/quiz/lib/cn.ts",
+          "type": "registry:file",
+          "target": "@components/quiz/lib/cn.ts"
+        },
+        {
+          "path": "registry/quiz/styles/styles.css",
+          "type": "registry:file",
+          "target": "@components/quiz/styles/styles.css"
+        }
+      ],
+      "type": "registry:block"
+    },
+    {
+      "name": "plot",
+      "title": "Plot",
+      "description": "Composable SVG plots with explicit axes, data layers, legends, controls, and configurable line styles.",
+      "files": [
+        {
+          "path": "registry/plot/lib/data.ts",
+          "type": "registry:lib",
+          "target": "@lib/plot/data.ts"
+        },
+        {
+          "path": "registry/plot/lib/paths.ts",
+          "type": "registry:lib",
+          "target": "@lib/plot/paths.ts"
+        },
+        {
+          "path": "registry/plot/lib/scales.ts",
+          "type": "registry:lib",
+          "target": "@lib/plot/scales.ts"
+        },
+        {
+          "path": "registry/plot/lib/ticks.ts",
+          "type": "registry:lib",
+          "target": "@lib/plot/ticks.ts"
+        },
+        {
+          "path": "registry/plot/ui/plot-axis.tsx",
+          "type": "registry:ui",
+          "target": "@ui/plot/plot-axis.tsx"
+        },
+        {
+          "path": "registry/plot/ui/plot-context.tsx",
+          "type": "registry:ui",
+          "target": "@ui/plot/plot-context.tsx"
+        },
+        {
+          "path": "registry/plot/ui/plot-controls.tsx",
+          "type": "registry:ui",
+          "target": "@ui/plot/plot-controls.tsx"
+        },
+        {
+          "path": "registry/plot/ui/plot-frame.tsx",
+          "type": "registry:ui",
+          "target": "@ui/plot/plot-frame.tsx"
+        },
+        {
+          "path": "registry/plot/ui/plot-heatmap.tsx",
+          "type": "registry:ui",
+          "target": "@ui/plot/plot-heatmap.tsx"
+        },
+        {
+          "path": "registry/plot/ui/plot-histogram.tsx",
+          "type": "registry:ui",
+          "target": "@ui/plot/plot-histogram.tsx"
+        },
+        {
+          "path": "registry/plot/ui/plot-legend.tsx",
+          "type": "registry:ui",
+          "target": "@ui/plot/plot-legend.tsx"
+        },
+        {
+          "path": "registry/plot/ui/plot-line.tsx",
+          "type": "registry:ui",
+          "target": "@ui/plot/plot-line.tsx"
+        },
+        {
+          "path": "registry/plot/ui/plot-reference-line.tsx",
+          "type": "registry:ui",
+          "target": "@ui/plot/plot-reference-line.tsx"
+        },
+        {
+          "path": "registry/plot/ui/plot-scatter.tsx",
+          "type": "registry:ui",
+          "target": "@ui/plot/plot-scatter.tsx"
+        },
+        {
+          "path": "registry/plot/ui/plot.tsx",
+          "type": "registry:ui",
+          "target": "@ui/plot/plot.tsx"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "function-plot",
+      "title": "Function Plot",
+      "description": "Interactive function curves with generated parameter sliders and SVG line styles.",
+      "registryDependencies": [
+        "EdwardAstill/edcn/plot"
+      ],
+      "files": [
+        {
+          "path": "registry/plot/components/function-plot.tsx",
+          "type": "registry:component",
+          "target": "@components/plot/function-plot.tsx"
+        },
+        {
+          "path": "registry/plot/ui/function-plot.tsx",
+          "type": "registry:ui",
+          "target": "@ui/plot/function-plot.tsx"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "use-code-runtime",
+      "title": "Use Code Runtime",
+      "description": "Run Python (Pyodide) or JavaScript/TypeScript code in Web Workers with status tracking and reset.",
+      "dependencies": [
+        "pyodide@^314.0.6",
+        "typescript@^5.9.3"
+      ],
+      "files": [
+        {
+          "path": "registry/code/hooks/use-code-runtime.ts",
+          "type": "registry:hook",
+          "target": "@hooks/code/use-code-runtime.ts"
+        },
+        {
+          "path": "registry/code/hooks/python-runtime.worker.ts",
+          "type": "registry:file",
+          "target": "@hooks/code/python-runtime.worker.ts"
+        },
+        {
+          "path": "registry/code/hooks/javascript-runtime.worker.ts",
+          "type": "registry:file",
+          "target": "@hooks/code/javascript-runtime.worker.ts"
+        }
+      ],
+      "type": "registry:hook"
+    },
+    {
+      "name": "code-editor",
+      "title": "Code Editor",
+      "description": "CodeMirror editors for Python, JavaScript, and TypeScript with output panel, copy, enlarge, and run controls.",
+      "dependencies": [
+        "@uiw/react-codemirror@^4.25.11",
+        "@codemirror/lang-javascript@^6.2.5",
+        "@codemirror/lang-python@^6.2.1",
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "EdwardAstill/edcn/use-code-runtime",
+        "input-group"
+      ],
+      "files": [
+        {
+          "path": "registry/code/ui/editor-primitives.tsx",
+          "type": "registry:ui",
+          "target": "@ui/code/editor-primitives.tsx"
+        },
+        {
+          "path": "registry/code/ui/language-editors.tsx",
+          "type": "registry:ui",
+          "target": "@ui/code/language-editors.tsx"
+        }
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "name": "calculator",
+      "title": "Scientific Calculator",
+      "description": "A shadcn Base UI scientific calculator backed by a Pyodide and SymPy solver.",
+      "dependencies": [
+        "lucide-react",
+        "pyodide@314.0.6"
+      ],
+      "registryDependencies": [
+        "alert",
+        "badge",
+        "button",
+        "card",
+        "checkbox",
+        "dialog",
+        "field",
+        "input",
+        "separator",
+        "spinner",
+        "tabs",
+        "tooltip"
+      ],
+      "files": [
+        {
+          "path": "registry/calculator/lib/model.ts",
+          "type": "registry:lib",
+          "target": "@lib/calculator/model.ts"
+        },
+        {
+          "path": "registry/calculator/lib/operations.ts",
+          "type": "registry:lib",
+          "target": "@lib/calculator/operations.ts"
+        },
+        {
+          "path": "registry/calculator/components/scientific-calculator.tsx",
+          "type": "registry:component",
+          "target": "@components/calculator/scientific-calculator.tsx"
+        },
+        {
+          "path": "registry/calculator/lib/reducer.ts",
+          "type": "registry:lib",
+          "target": "@lib/calculator/reducer.ts"
+        },
+        {
+          "path": "registry/calculator/components/index.ts",
+          "type": "registry:component",
+          "target": "@components/calculator/index.ts"
+        },
+        {
+          "path": "registry/calculator/lib/generated/solver-worker-source.ts",
+          "type": "registry:lib",
+          "target": "@lib/calculator/generated/solver-worker-source.ts"
+        },
+        {
+          "path": "registry/calculator/lib/generated/solver-source.ts",
+          "type": "registry:lib",
+          "target": "@lib/calculator/generated/solver-source.ts"
+        },
+        {
+          "path": "registry/calculator/lib/generated/help-content.ts",
+          "type": "registry:lib",
+          "target": "@lib/calculator/generated/help-content.ts"
+        },
+        {
+          "path": "registry/calculator/lib/dsl/tokenize.ts",
+          "type": "registry:lib",
+          "target": "@lib/calculator/dsl/tokenize.ts"
+        },
+        {
+          "path": "registry/calculator/lib/dsl/analyze.ts",
+          "type": "registry:lib",
+          "target": "@lib/calculator/dsl/analyze.ts"
+        },
+        {
+          "path": "registry/calculator/lib/dsl/latex.ts",
+          "type": "registry:lib",
+          "target": "@lib/calculator/dsl/latex.ts"
+        },
+        {
+          "path": "registry/calculator/lib/dsl/mathml.ts",
+          "type": "registry:lib",
+          "target": "@lib/calculator/dsl/mathml.ts"
+        },
+        {
+          "path": "registry/calculator/lib/dsl/parser.ts",
+          "type": "registry:lib",
+          "target": "@lib/calculator/dsl/parser.ts"
+        },
+        {
+          "path": "registry/calculator/lib/dsl/ast.ts",
+          "type": "registry:lib",
+          "target": "@lib/calculator/dsl/ast.ts"
+        },
+        {
+          "path": "registry/calculator/ui/result-card.tsx",
+          "type": "registry:ui",
+          "target": "@ui/calculator/result-card.tsx"
+        },
+        {
+          "path": "registry/calculator/lib/solver/solver.worker.ts",
+          "type": "registry:lib",
+          "target": "@lib/calculator/solver/solver.worker.ts"
+        },
+        {
+          "path": "registry/calculator/lib/solver/preflight.ts",
+          "type": "registry:lib",
+          "target": "@lib/calculator/solver/preflight.ts"
+        },
+        {
+          "path": "registry/calculator/lib/solver/protocol.ts",
+          "type": "registry:lib",
+          "target": "@lib/calculator/solver/protocol.ts"
+        },
+        {
+          "path": "registry/calculator/lib/solver/client.ts",
+          "type": "registry:lib",
+          "target": "@lib/calculator/solver/client.ts"
+        },
+        {
+          "path": "registry/calculator/lib/solver/solver.py",
+          "type": "registry:file",
+          "target": "@lib/calculator/solver/solver.py"
+        }
+      ],
+      "type": "registry:block"
+    },
+    {
+      "name": "data-table",
+      "title": "Data Table",
+      "description": "Resizable data table with a sticky first column, double-click sorting, and optional pagination.",
+      "registryDependencies": [
+        "table",
         "button"
       ],
       "files": [
         {
-          "path": "registry/blocks/workspace/workspace-demo.tsx",
-          "type": "registry:component"
+          "path": "registry/table/components/data-table.tsx",
+          "type": "registry:component",
+          "target": "@components/table/data-table.tsx"
         },
         {
-          "path": "registry/blocks/workspace/workspace.tsx",
-          "type": "registry:component"
+          "path": "registry/table/hooks/use-column-resize.ts",
+          "type": "registry:hook",
+          "target": "@hooks/table/use-column-resize.ts"
         },
         {
-          "path": "registry/blocks/workspace/workspace-tiled.tsx",
-          "type": "registry:component"
-        },
-        {
-          "path": "registry/blocks/workspace/workspace-floating.tsx",
-          "type": "registry:component"
-        },
-        {
-          "path": "registry/blocks/workspace/workspace-popouts.tsx",
-          "type": "registry:block"
+          "path": "registry/table/lib/column-sizing.ts",
+          "type": "registry:lib",
+          "target": "@lib/table/column-sizing.ts"
         }
-      ]
-    },
-    {
-      "name": "example-with-css",
-      "type": "registry:component",
-      "title": "Example with CSS",
-      "description": "A login form with a CSS file.",
-      "files": [
-        {
-          "path": "registry/blocks/example-with-css/example-card.tsx",
-          "type": "registry:component"
-        },
-        {
-          "path": "registry/blocks/example-with-css/example-card.css",
-          "type": "registry:component"
-        }
-      ]
+      ],
+      "type": "registry:component"
     }
   ]
 }

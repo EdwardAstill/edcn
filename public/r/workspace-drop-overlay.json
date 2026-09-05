@@ -3,11 +3,15 @@
   "name": "workspace-drop-overlay",
   "title": "Workspace Drop Overlay",
   "description": "Drop preview overlay: center = tab, edges = split at that edge.",
+  "registryDependencies": [
+    "EdwardAstill/edcn/workspace-core"
+  ],
   "files": [
     {
-      "path": "registry/ui/workspace-drop-overlay.tsx",
-      "content": "/**\n * Drop preview overlay for a stack, rendered while a view is dragged over\n * it — shows where the view will land BEFORE it drops (ported from\n * tiling-tabs): center = tab into the stack, edges = split at that edge.\n */\n\nimport { cn } from \"@/lib/utils\";\nimport type { DropEdge } from \"@/registry/lib/workspace/drop-edge\";\n\nexport interface WorkspaceDropOverlayProps {\n  edge: DropEdge;\n}\n\nexport function WorkspaceDropOverlay({ edge }: WorkspaceDropOverlayProps) {\n  return (\n    <div\n      aria-hidden=\"true\"\n      data-drop-edge={edge}\n      className={cn(\n        \"pointer-events-none absolute z-20 border-2 border-primary/50 bg-primary/10\",\n        edge === \"center\" && \"inset-2\",\n        edge === \"left\" && \"inset-y-2 left-2 w-[calc(50%-0.5rem)]\",\n        edge === \"right\" && \"inset-y-2 right-2 w-[calc(50%-0.5rem)]\",\n        edge === \"top\" && \"inset-x-2 top-2 h-[calc(50%-0.5rem)]\",\n        edge === \"bottom\" && \"inset-x-2 bottom-2 h-[calc(50%-0.5rem)]\",\n      )}\n    />\n  );\n}\n",
-      "type": "registry:ui"
+      "path": "registry/workspace/ui/workspace-drop-overlay.tsx",
+      "content": "/**\n * Drop preview overlay for a stack, rendered while a view is dragged over\n * it — shows where the view will land BEFORE it drops (ported from\n * tiling-tabs): center = tab into the stack, edges = split at that edge.\n */\n\nimport { cn } from \"@/lib/utils\";\nimport type { DropEdge } from \"@/registry/workspace/lib/drop-edge\";\n\nexport interface WorkspaceDropOverlayProps {\n  edge: DropEdge;\n}\n\nexport function WorkspaceDropOverlay({ edge }: WorkspaceDropOverlayProps) {\n  return (\n    <div\n      aria-hidden=\"true\"\n      data-drop-edge={edge}\n      className={cn(\n        \"pointer-events-none absolute z-20 border-2 border-primary/50 bg-primary/10\",\n        edge === \"center\" && \"inset-2\",\n        edge === \"left\" && \"inset-y-2 left-2 w-[calc(50%-0.5rem)]\",\n        edge === \"right\" && \"inset-y-2 right-2 w-[calc(50%-0.5rem)]\",\n        edge === \"top\" && \"inset-x-2 top-2 h-[calc(50%-0.5rem)]\",\n        edge === \"bottom\" && \"inset-x-2 bottom-2 h-[calc(50%-0.5rem)]\",\n      )}\n    />\n  );\n}\n",
+      "type": "registry:ui",
+      "target": "@ui/workspace/workspace-drop-overlay.tsx"
     }
   ],
   "type": "registry:ui"

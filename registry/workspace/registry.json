@@ -1,0 +1,277 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "items": [
+    {
+      "name": "workspace-core",
+      "type": "registry:lib",
+      "title": "Workspace Core",
+      "description": "Framework-agnostic workspace state: types, reducer, store, and initial-state factory.",
+      "files": [
+        {
+          "path": "lib/types.ts",
+          "type": "registry:lib",
+          "target": "@lib/workspace/types.ts"
+        },
+        {
+          "path": "lib/ids.ts",
+          "type": "registry:lib",
+          "target": "@lib/workspace/ids.ts"
+        },
+        {
+          "path": "lib/actions.ts",
+          "type": "registry:lib",
+          "target": "@lib/workspace/actions.ts"
+        },
+        {
+          "path": "lib/reducer.ts",
+          "type": "registry:lib",
+          "target": "@lib/workspace/reducer.ts"
+        },
+        {
+          "path": "lib/model/record.ts",
+          "type": "registry:lib",
+          "target": "@lib/workspace/model/record.ts"
+        },
+        {
+          "path": "lib/model/stack.ts",
+          "type": "registry:lib",
+          "target": "@lib/workspace/model/stack.ts"
+        },
+        {
+          "path": "lib/model/layout.ts",
+          "type": "registry:lib",
+          "target": "@lib/workspace/model/layout.ts"
+        },
+        {
+          "path": "lib/model/surface.ts",
+          "type": "registry:lib",
+          "target": "@lib/workspace/model/surface.ts"
+        },
+        {
+          "path": "lib/store.ts",
+          "type": "registry:lib",
+          "target": "@lib/workspace/store.ts"
+        },
+        {
+          "path": "lib/factory.ts",
+          "type": "registry:lib",
+          "target": "@lib/workspace/factory.ts"
+        },
+        {
+          "path": "lib/config.ts",
+          "type": "registry:lib",
+          "target": "@lib/workspace/config.ts"
+        },
+        {
+          "path": "lib/keymap.ts",
+          "type": "registry:lib",
+          "target": "@lib/workspace/keymap.ts"
+        },
+        {
+          "path": "lib/drop-edge.ts",
+          "type": "registry:lib",
+          "target": "@lib/workspace/drop-edge.ts"
+        },
+        {
+          "path": "lib/persistence.ts",
+          "type": "registry:lib",
+          "target": "@lib/workspace/persistence.ts"
+        }
+      ],
+      "registryDependencies": []
+    },
+    {
+      "name": "use-workspace",
+      "type": "registry:hook",
+      "title": "Use Workspace",
+      "description": "React bindings for the workspace store: provider and hooks.",
+      "registryDependencies": [
+        "EdwardAstill/edcn/workspace-core",
+        "EdwardAstill/edcn/use-workspace-drag"
+      ],
+      "files": [
+        {
+          "path": "hooks/use-workspace.ts",
+          "type": "registry:hook",
+          "target": "@hooks/workspace/use-workspace.ts"
+        },
+        {
+          "path": "hooks/use-workspace-keymap.ts",
+          "type": "registry:hook",
+          "target": "@hooks/workspace/use-workspace-keymap.ts"
+        }
+      ]
+    },
+    {
+      "name": "use-view-working-state",
+      "type": "registry:hook",
+      "title": "Use View Working State",
+      "description": "Per-view state keyed by view id; survives tabs, splits, floats, and docks.",
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "hooks/use-view-working-state.ts",
+          "type": "registry:hook",
+          "target": "@hooks/workspace/use-view-working-state.ts"
+        }
+      ]
+    },
+    {
+      "name": "use-workspace-drag",
+      "type": "registry:hook",
+      "title": "Use Workspace Drag",
+      "description": "Drag & drop context for docking views; live drop preview state.",
+      "registryDependencies": [
+        "EdwardAstill/edcn/workspace-core"
+      ],
+      "files": [
+        {
+          "path": "hooks/use-workspace-drag.ts",
+          "type": "registry:hook",
+          "target": "@hooks/workspace/use-workspace-drag.ts"
+        }
+      ]
+    },
+    {
+      "name": "workspace-drop-overlay",
+      "type": "registry:ui",
+      "title": "Workspace Drop Overlay",
+      "description": "Drop preview overlay: center = tab, edges = split at that edge.",
+      "files": [
+        {
+          "path": "ui/workspace-drop-overlay.tsx",
+          "type": "registry:ui",
+          "target": "@ui/workspace/workspace-drop-overlay.tsx"
+        }
+      ],
+      "registryDependencies": [
+        "EdwardAstill/edcn/workspace-core"
+      ]
+    },
+    {
+      "name": "workspace-tab-list",
+      "type": "registry:ui",
+      "title": "Workspace Tab List",
+      "description": "Tab strip for a workspace stack; draggable tabs, activates and closes views.",
+      "registryDependencies": [
+        "EdwardAstill/edcn/use-workspace",
+        "EdwardAstill/edcn/use-workspace-drag"
+      ],
+      "files": [
+        {
+          "path": "ui/workspace-tab-list.tsx",
+          "type": "registry:ui",
+          "target": "@ui/workspace/workspace-tab-list.tsx"
+        }
+      ]
+    },
+    {
+      "name": "workspace-stack",
+      "type": "registry:ui",
+      "title": "Workspace Stack",
+      "description": "Renders one stack: tab strip plus the active view; drop target for docking.",
+      "registryDependencies": [
+        "EdwardAstill/edcn/workspace-tab-list",
+        "EdwardAstill/edcn/use-workspace",
+        "EdwardAstill/edcn/use-workspace-drag",
+        "EdwardAstill/edcn/workspace-drop-overlay"
+      ],
+      "files": [
+        {
+          "path": "ui/workspace-stack.tsx",
+          "type": "registry:ui",
+          "target": "@ui/workspace/workspace-stack.tsx"
+        }
+      ]
+    },
+    {
+      "name": "workspace-resize-handle",
+      "type": "registry:ui",
+      "title": "Workspace Resize Handle",
+      "description": "Draggable divider between split children; dispatches layout/resize.",
+      "registryDependencies": [
+        "EdwardAstill/edcn/use-workspace"
+      ],
+      "files": [
+        {
+          "path": "ui/workspace-resize-handle.tsx",
+          "type": "registry:ui",
+          "target": "@ui/workspace/workspace-resize-handle.tsx"
+        }
+      ]
+    },
+    {
+      "name": "workspace-layout",
+      "type": "registry:ui",
+      "title": "Workspace Layout",
+      "description": "Recursively renders a workspace layout tree with resizable ratio-based splits.",
+      "registryDependencies": [
+        "EdwardAstill/edcn/workspace-stack",
+        "EdwardAstill/edcn/workspace-resize-handle"
+      ],
+      "files": [
+        {
+          "path": "ui/workspace-layout.tsx",
+          "type": "registry:ui",
+          "target": "@ui/workspace/workspace-layout.tsx"
+        }
+      ]
+    },
+    {
+      "name": "workspace",
+      "type": "registry:block",
+      "title": "Workspace",
+      "description": "Assembled IDE-style workspace: the Workspace component with tiled layouts, floating windows, popouts, and a keymap.",
+      "registryDependencies": [
+        "EdwardAstill/edcn/workspace-core",
+        "EdwardAstill/edcn/use-workspace",
+        "EdwardAstill/edcn/workspace-tab-list",
+        "EdwardAstill/edcn/workspace-stack",
+        "EdwardAstill/edcn/workspace-layout",
+        "EdwardAstill/edcn/workspace-resize-handle",
+        "EdwardAstill/edcn/floating-window",
+        "EdwardAstill/edcn/use-view-working-state",
+        "EdwardAstill/edcn/use-workspace-drag",
+        "EdwardAstill/edcn/workspace-drop-overlay"
+      ],
+      "files": [
+        {
+          "path": "components/workspace.tsx",
+          "type": "registry:component",
+          "target": "@components/workspace/workspace.tsx"
+        },
+        {
+          "path": "components/workspace-tiled.tsx",
+          "type": "registry:component",
+          "target": "@components/workspace/workspace-tiled.tsx"
+        },
+        {
+          "path": "components/workspace-floating.tsx",
+          "type": "registry:component",
+          "target": "@components/workspace/workspace-floating.tsx"
+        },
+        {
+          "path": "components/workspace-popouts.tsx",
+          "type": "registry:component",
+          "target": "@components/workspace/workspace-popouts.tsx"
+        }
+      ]
+    },
+    {
+      "name": "floating-window",
+      "type": "registry:ui",
+      "title": "Floating Window",
+      "description": "A draggable, resizable floating window.",
+      "files": [
+        {
+          "path": "ui/floating-window.tsx",
+          "type": "registry:ui",
+          "target": "@ui/workspace/floating-window.tsx"
+        }
+      ],
+      "registryDependencies": [
+        "EdwardAstill/edcn/workspace-core"
+      ]
+    }
+  ]
+}

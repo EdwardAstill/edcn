@@ -1,0 +1,32 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "items": [
+    {
+      "name": "data-table",
+      "type": "registry:component",
+      "title": "Data Table",
+      "description": "Resizable data table with a sticky first column, double-click sorting, and optional pagination.",
+      "registryDependencies": [
+        "table",
+        "button"
+      ],
+      "files": [
+        {
+          "path": "components/data-table.tsx",
+          "type": "registry:component",
+          "target": "@components/table/data-table.tsx"
+        },
+        {
+          "path": "hooks/use-column-resize.ts",
+          "type": "registry:hook",
+          "target": "@hooks/table/use-column-resize.ts"
+        },
+        {
+          "path": "lib/column-sizing.ts",
+          "type": "registry:lib",
+          "target": "@lib/table/column-sizing.ts"
+        }
+      ]
+    }
+  ]
+}

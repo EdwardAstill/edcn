@@ -1,149 +1,147 @@
 #!/usr/bin/env bun
-// Generates src/registry-preview.tsx from registry/ so the preview site
-// always mirrors what is in the registry without manual editing.
+// Generates preview/registry-preview.tsx from examples/ so the preview site
+// always mirrors what is in the examples folders without manual editing.
 //
-// For every registry block the preview renders the first renderable
-// component (skipping async server components, which need an RSC host)
-// and embeds the source code of the block's files plus any local
-// registry:ui dependencies, shown beneath the demo.
+// Every examples/<area>/<name>.tsx becomes one preview entry, grouped by
+// area. Each entry is rendered from its default export or the PascalCase
+// named export matching the file name, and its full source is shown beneath
+// the demo. An optional `export const description = "…"` provides the
+// entry's description.
 //
 // Usage: bun scripts/generate-preview-index.ts [--watch]
 
-import { readFileSync, writeFileSync, watch } from "node:fs";
+import {
+  existsSync,
+  readdirSync,
+  readFileSync,
+  watch,
+  writeFileSync,
+} from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const registryJsonPath = path.join(root, "registry.json");
-const outPath = path.join(root, "src", "registry-preview.tsx");
+const examplesDir = path.join(root, "examples");
+const outPath = path.join(root, "preview", "registry-preview.tsx");
+
+// Preferred tab order; unknown area folders follow alphabetically.
+const AREA_ORDER = ["workspace", "quiz", "plot", "code"];
 
 const toPascal = (name: string) =>
   name
     .split(/[-_.]/)
-    .filter(Boolean)
-    .map((part) => part[0].toUpperCase() + part.slice(1))
+    .flatMap((part) => (part ? [part[0].toUpperCase() + part.slice(1)] : []))
     .join("");
 
 const toImportPath = (relPath: string) => `@/${relPath.replace(/\.tsx$/, "")}`;
 
-const SOURCE_EXTENSIONS = new Set([".ts", ".tsx", ".css"]);
-
 // Async server components cannot run in the client-side preview.
 const SERVER_COMPONENT = /export default async|"use server"/;
+const DESCRIPTION = /export const description = "((?:[^"\\]|\\.)*)";/;
+const DEFAULT_EXPORT = /export default (?!async)/;
+const NAMED_EXPORT = (name: string) =>
+  new RegExp(`export (async )?(function|const) ${name}\\b`);
 
-interface RegistryFile {
-  path: string;
-  type: string;
-}
-interface RegistryItem {
-  name: string;
-  type: string;
-  title: string;
-  description?: string;
-  registryDependencies?: string[];
-  files: RegistryFile[];
-}
 interface PreviewFile {
   path: string;
   source: string;
 }
-
-function readSourceFiles(item: RegistryItem): PreviewFile[] {
-  return item.files
-    .filter((file) => SOURCE_EXTENSIONS.has(path.extname(file.path)))
-    .map((file) => ({
-      path: file.path,
-      source: readFileSync(path.join(root, file.path), "utf8"),
-    }));
+interface PreviewEntry {
+  name: string;
+  area: string;
+  title: string;
+  description: string;
+  files: PreviewFile[];
+  componentName: string | null;
+  importPath: string;
 }
 
-function readRegistry(): { items: RegistryItem[] } {
-  try {
-    return JSON.parse(readFileSync(registryJsonPath, "utf8")) as {
-      items: RegistryItem[];
-    };
-  } catch (error) {
-    throw new Error(
-      `[preview-gen] Failed to parse ${registryJsonPath}: ${(error as Error).message}`,
-    );
+function listAreas(): string[] {
+  if (!existsSync(examplesDir)) return [];
+  const dirs = readdirSync(examplesDir, { withFileTypes: true }).flatMap(
+    (entry) => (entry.isDirectory() ? [entry.name] : []),
+  );
+  const known = AREA_ORDER.filter((area) => dirs.includes(area));
+  const extra = dirs
+    .filter((dir) => !AREA_ORDER.includes(dir))
+    .sort((a, b) => a.localeCompare(b));
+  return [...known, ...extra];
+}
+
+function collectEntries(): PreviewEntry[] {
+  const entries: PreviewEntry[] = [];
+
+  for (const area of listAreas()) {
+    const dir = path.join(examplesDir, area);
+    const files = readdirSync(dir)
+      .filter((file) => file.endsWith(".tsx"))
+      .sort((a, b) => a.localeCompare(b));
+
+    for (const file of files) {
+      const relPath = `examples/${area}/${file}`;
+      const stem = path.basename(file, ".tsx");
+      const source = readFileSync(path.join(root, relPath), "utf8");
+
+      if (SERVER_COMPONENT.test(source)) {
+        console.error(
+          `[preview-gen] skipped ${relPath} (async server component)`,
+        );
+        continue;
+      }
+
+      const componentName = toPascal(stem);
+      const renderable =
+        DEFAULT_EXPORT.test(source) || NAMED_EXPORT(componentName).test(source);
+      const description =
+        source.match(DESCRIPTION)?.[1]?.replace(/\\"/g, '"') ?? "";
+
+      entries.push({
+        name: stem,
+        area,
+        title: toPascal(stem).replace(/([a-z0-9])([A-Z])/g, "$1 $2"),
+        description,
+        files: [{ path: relPath, source }],
+        componentName: renderable ? componentName : null,
+        importPath: toImportPath(relPath),
+      });
+    }
   }
+
+  return entries;
 }
 
 function generate() {
-  const { items } = readRegistry();
-
-  // Local ui primitives that blocks can depend on (by item name).
-  const localUiItems = new Map(
-    items
-      .filter((item) => item.type === "registry:ui")
-      .map((item) => [item.name, item]),
-  );
+  const entries = collectEntries();
 
   const imports: string[] = [];
-  const blockEntries: string[] = [];
+  const usedModuleNames = new Set<string>();
   const skipped: string[] = [];
+  const blockEntries: string[] = [];
 
-  for (const item of items) {
-    // Only blocks/components are previewable; lib and hook items exist as
-    // dependencies of other items and have no renderable demo.
-    if (
-      item.type === "registry:ui" ||
-      item.type === "registry:lib" ||
-      item.type === "registry:hook"
-    )
-      continue;
-
-    const candidates = item.files.filter(
-      (file) =>
-        file.type === "registry:component" && file.path.endsWith(".tsx"),
-    );
-
-    // Demo with the first renderable component: the block's entry file,
-    // or — if that is an async server component — any other client
-    // component shipped with the block.
-    let entry: RegistryFile | undefined;
-    let entryStem = "";
-    for (const candidate of candidates) {
-      if (
-        SERVER_COMPONENT.test(
-          readFileSync(path.join(root, candidate.path), "utf8"),
-        )
-      ) {
-        skipped.push(`${candidate.path} (async server component)`);
-        continue;
-      }
-      entry = candidate;
-      entryStem = toPascal(path.basename(candidate.path, ".tsx"));
-      break;
-    }
-
-    // Source shown beneath the demo: the block's own files plus the files
-    // of any local registry:ui dependencies it uses.
-    const files: PreviewFile[] = readSourceFiles(item);
-    for (const dependency of item.registryDependencies ?? []) {
-      const localItem = localUiItems.get(dependency);
-      if (localItem) files.push(...readSourceFiles(localItem));
-    }
-
-    if (!entry) {
-      blockEntries.push(
-        `  { name: ${JSON.stringify(item.name)}, title: ${JSON.stringify(item.title)}, description: ${JSON.stringify(item.description ?? "")}, files: ${JSON.stringify(files)}, Component: null },`,
+  for (const entry of entries) {
+    if (!entry.componentName) {
+      skipped.push(
+        `${entry.files[0]?.path} (no default or ${entry.componentName ?? "matching"} export)`,
       );
-      skipped.push(`${item.name} (no renderable .tsx file)`);
       continue;
     }
 
-    const varName = toPascal(item.name);
-    imports.push(
-      `import * as ${varName}Module from "${toImportPath(entry.path)}";`,
-    );
+    let moduleName = toPascal(entry.name);
+    if (usedModuleNames.has(moduleName)) {
+      moduleName = toPascal(`${entry.area}-${entry.name}`);
+    }
+    if (usedModuleNames.has(moduleName)) {
+      throw new Error(`[preview-gen] duplicate module name: ${moduleName}`);
+    }
+    usedModuleNames.add(moduleName);
+
+    imports.push(`import * as ${moduleName}Module from "${entry.importPath}";`);
     blockEntries.push(
-      `  { name: ${JSON.stringify(item.name)}, title: ${JSON.stringify(item.title)}, description: ${JSON.stringify(item.description ?? "")}, files: ${JSON.stringify(files)}, Component: resolveExport(${varName}Module, ${JSON.stringify(entryStem)}) },`,
+      `  { name: ${JSON.stringify(entry.name)}, area: ${JSON.stringify(entry.area)}, title: ${JSON.stringify(entry.title)}, description: ${JSON.stringify(entry.description)}, files: ${JSON.stringify(entry.files)}, Component: resolveExport(${moduleName}Module, ${JSON.stringify(entry.componentName)}) },`,
     );
   }
 
   const output = `// AUTO-GENERATED by scripts/generate-preview-index.ts — do not edit.
-/* eslint-disable */
 
 import type { ComponentType } from "react";
 
@@ -156,6 +154,7 @@ export type PreviewFile = {
 
 export type BlockDemo = {
   name: string;
+  area: string;
   title: string;
   description: string;
   files: PreviewFile[];
@@ -177,9 +176,10 @@ ${blockEntries.join("\n")}
 `;
 
   writeFileSync(outPath, output);
-  console.log(
+  process.stdout.write(
     `[preview-gen] ${blockEntries.length} blocks` +
-      (skipped.length ? ` (skipped: ${skipped.join(", ")})` : ""),
+      (skipped.length ? ` (skipped: ${skipped.join(", ")})` : "") +
+      "\n",
   );
 }
 
@@ -201,7 +201,6 @@ if (process.argv.includes("--watch")) {
       console.error("[preview-gen] regeneration failed:", error);
     }
   }, 100);
-  watch(path.join(root, "registry"), { recursive: true }, regen);
-  watch(registryJsonPath, regen);
-  console.log("[preview-gen] watching registry/ for changes…");
+  watch(examplesDir, { recursive: true }, regen);
+  process.stdout.write("[preview-gen] watching examples/ for changes…\n");
 }

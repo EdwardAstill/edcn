@@ -4,14 +4,15 @@
   "title": "Workspace Layout",
   "description": "Recursively renders a workspace layout tree with resizable ratio-based splits.",
   "registryDependencies": [
-    "workspace-stack",
-    "workspace-resize-handle"
+    "EdwardAstill/edcn/workspace-stack",
+    "EdwardAstill/edcn/workspace-resize-handle"
   ],
   "files": [
     {
-      "path": "registry/ui/workspace-layout.tsx",
-      "content": "/**\n * Recursively renders a LayoutNode tree as a flex layout. Splits use\n * normalized ratios (flex-grow), so the tree scales with its container.\n * Resize handles arrive in segment 2; ratios are fixed here for now.\n */\n\nimport * as React from \"react\";\n\nimport { cn } from \"@/lib/utils\";\nimport { WorkspaceResizeHandle } from \"@/registry/ui/workspace-resize-handle\";\nimport { WorkspaceStack } from \"@/registry/ui/workspace-stack\";\nimport type { LayoutNode } from \"@/registry/lib/workspace/types\";\n\nexport interface WorkspaceLayoutProps\n  extends React.HTMLAttributes<HTMLDivElement> {\n  node: LayoutNode;\n}\n\nexport function WorkspaceLayout({\n  node,\n  className,\n  ...props\n}: WorkspaceLayoutProps) {\n  return (\n    <div className={cn(\"h-full w-full\", className)} {...props}>\n      <LayoutNodeView node={node} />\n    </div>\n  );\n}\n\nfunction LayoutNodeView({ node }: { node: LayoutNode }) {\n  if (node.type === \"stack\") {\n    return <WorkspaceStack stackId={node.stackId} className=\"h-full w-full\" />;\n  }\n\n  const horizontal = node.direction === \"horizontal\";\n\n  return (\n    <div\n      className={cn(\n        \"flex h-full w-full min-h-0 min-w-0\",\n        horizontal ? \"flex-row\" : \"flex-col\",\n      )}\n    >\n      <div style={{ flexGrow: node.ratio }} className=\"min-h-0 min-w-0 basis-0\">\n        <LayoutNodeView node={node.first} />\n      </div>\n      <WorkspaceResizeHandle\n        splitId={node.id}\n        direction={node.direction}\n        ratio={node.ratio}\n      />\n      <div\n        style={{ flexGrow: 1 - node.ratio }}\n        className=\"min-h-0 min-w-0 basis-0\"\n      >\n        <LayoutNodeView node={node.second} />\n      </div>\n    </div>\n  );\n}\n",
-      "type": "registry:ui"
+      "path": "registry/workspace/ui/workspace-layout.tsx",
+      "content": "/**\n * Recursively renders a LayoutNode tree as a flex layout. Splits use\n * normalized ratios (flex-grow), so the tree scales with its container.\n * Resize handles arrive in segment 2; ratios are fixed here for now.\n */\n\nimport * as React from \"react\";\n\nimport { cn } from \"@/lib/utils\";\nimport { WorkspaceResizeHandle } from \"@/registry/workspace/ui/workspace-resize-handle\";\nimport { WorkspaceStack } from \"@/registry/workspace/ui/workspace-stack\";\nimport type { LayoutNode } from \"@/registry/workspace/lib/types\";\n\nexport interface WorkspaceLayoutProps\n  extends React.HTMLAttributes<HTMLDivElement> {\n  node: LayoutNode;\n}\n\nexport function WorkspaceLayout({\n  node,\n  className,\n  ...props\n}: WorkspaceLayoutProps) {\n  return (\n    <div className={cn(\"h-full w-full\", className)} {...props}>\n      <LayoutNodeView node={node} />\n    </div>\n  );\n}\n\nfunction LayoutNodeView({ node }: { node: LayoutNode }) {\n  if (node.type === \"stack\") {\n    return <WorkspaceStack stackId={node.stackId} className=\"h-full w-full\" />;\n  }\n\n  const horizontal = node.direction === \"horizontal\";\n\n  return (\n    <div\n      className={cn(\n        \"flex h-full w-full min-h-0 min-w-0\",\n        horizontal ? \"flex-row\" : \"flex-col\",\n      )}\n    >\n      <div style={{ flexGrow: node.ratio }} className=\"min-h-0 min-w-0 basis-0\">\n        <LayoutNodeView node={node.first} />\n      </div>\n      <WorkspaceResizeHandle\n        splitId={node.id}\n        direction={node.direction}\n        ratio={node.ratio}\n      />\n      <div\n        style={{ flexGrow: 1 - node.ratio }}\n        className=\"min-h-0 min-w-0 basis-0\"\n      >\n        <LayoutNodeView node={node.second} />\n      </div>\n    </div>\n  );\n}\n",
+      "type": "registry:ui",
+      "target": "@ui/workspace/workspace-layout.tsx"
     }
   ],
   "type": "registry:ui"

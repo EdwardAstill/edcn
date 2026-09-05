@@ -1,0 +1,9 @@
+@source "../components";
+@source "../ui";
+
+@layer base {
+  .cn-questionnaire,
+  .cn-questionnaire * {
+    border-color: var(--border);
+  }
+}

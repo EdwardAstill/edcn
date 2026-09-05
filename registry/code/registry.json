@@ -1,0 +1,60 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "items": [
+    {
+      "name": "use-code-runtime",
+      "type": "registry:hook",
+      "title": "Use Code Runtime",
+      "description": "Run Python (Pyodide) or JavaScript/TypeScript code in Web Workers with status tracking and reset.",
+      "dependencies": [
+        "pyodide@^314.0.6",
+        "typescript@^5.9.3"
+      ],
+      "files": [
+        {
+          "path": "hooks/use-code-runtime.ts",
+          "type": "registry:hook",
+          "target": "@hooks/code/use-code-runtime.ts"
+        },
+        {
+          "path": "hooks/python-runtime.worker.ts",
+          "type": "registry:file",
+          "target": "@hooks/code/python-runtime.worker.ts"
+        },
+        {
+          "path": "hooks/javascript-runtime.worker.ts",
+          "type": "registry:file",
+          "target": "@hooks/code/javascript-runtime.worker.ts"
+        }
+      ]
+    },
+    {
+      "name": "code-editor",
+      "type": "registry:ui",
+      "title": "Code Editor",
+      "description": "CodeMirror editors for Python, JavaScript, and TypeScript with output panel, copy, enlarge, and run controls.",
+      "registryDependencies": [
+        "EdwardAstill/edcn/use-code-runtime",
+        "input-group"
+      ],
+      "dependencies": [
+        "@uiw/react-codemirror@^4.25.11",
+        "@codemirror/lang-javascript@^6.2.5",
+        "@codemirror/lang-python@^6.2.1",
+        "lucide-react"
+      ],
+      "files": [
+        {
+          "path": "ui/editor-primitives.tsx",
+          "type": "registry:ui",
+          "target": "@ui/code/editor-primitives.tsx"
+        },
+        {
+          "path": "ui/language-editors.tsx",
+          "type": "registry:ui",
+          "target": "@ui/code/language-editors.tsx"
+        }
+      ]
+    }
+  ]
+}
