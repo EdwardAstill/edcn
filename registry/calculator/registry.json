@@ -8,7 +8,8 @@
       "description": "A shadcn Base UI scientific calculator backed by a Pyodide and SymPy solver.",
       "dependencies": [
         "lucide-react",
-        "pyodide@314.0.6"
+        "pyodide@314.0.6",
+        "recharts@3.8.0"
       ],
       "registryDependencies": [
         "alert",
@@ -22,7 +23,9 @@
         "separator",
         "spinner",
         "tabs",
-        "tooltip"
+        "tooltip",
+        "chart",
+        "EdwardAstill/edcn/plot"
       ],
       "files": [
         {
@@ -124,6 +127,16 @@
           "path": "lib/solver/solver.py",
           "type": "registry:file",
           "target": "@lib/calculator/solver/solver.py"
+        },
+        {
+          "path": "lib/plot.ts",
+          "type": "registry:lib",
+          "target": "@lib/calculator/plot.ts"
+        },
+        {
+          "path": "ui/relation-plot.tsx",
+          "type": "registry:ui",
+          "target": "@ui/calculator/relation-plot.tsx"
         }
       ]
     }

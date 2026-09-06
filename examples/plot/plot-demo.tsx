@@ -2,80 +2,97 @@
 
 import * as React from "react";
 import {
-  Plot,
-  PlotTitle,
-  PlotDescription,
-  PlotCanvas,
-  PlotGrid,
-  PlotXAxis,
-  PlotYAxis,
-  PlotData,
+  CartesianGrid,
+  ComposedChart,
+  Line,
+  ReferenceLine,
+  Scatter,
+  XAxis,
+  YAxis,
+} from "recharts";
+import {
+  ChartContainer,
+  ChartLegend,
+  ChartLegendContent,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
+import {
   PlotFunction,
-  PlotLine,
-  PlotScatter,
-  PlotReferenceLine,
-  PlotLegend,
   PlotControls,
   PlotSlider,
-  type Point,
 } from "@/registry/plot/ui/plot";
 
 export const description =
-  "Compose axes, data, a legend, and sliders. Change one parameter to compare a wave with reference data.";
-
-const reference: Point[] = Array.from({ length: 32 }, (_, index) => {
-  const x = (index / 31) * Math.PI * 2;
-  return [x, Math.cos(x)];
+  "A sampled function alongside native Recharts lines and observations, with a shared parameter control.";
+const xDomain = [0, Math.PI * 2] as const;
+const reference = Array.from({ length: 32 }, (_, i) => {
+  const x = (i / 31) * Math.PI * 2;
+  return { x, y: Math.cos(x) };
 });
-const observations: Point[] = Array.from({ length: 10 }, (_, index) => {
-  const x = (index / 9) * Math.PI * 2;
-  return [x, Math.sin(x) + 0.15 * Math.cos(x * 3)];
+const observations = Array.from({ length: 10 }, (_, i) => {
+  const x = (i / 9) * Math.PI * 2;
+  return { x, y: Math.sin(x) + 0.15 * Math.cos(x * 3) };
 });
+const config = {
+  model: { label: "Model", color: "var(--chart-1)" },
+  reference: { label: "Reference", color: "var(--chart-2)" },
+  observations: { label: "Observations", color: "var(--chart-3)" },
+};
 
 export function PlotDemo() {
   const [amplitude, setAmplitude] = React.useState(1);
   return (
-    <Plot
-      xDomain={[0, Math.PI * 2]}
-      yDomain={[-3, 3]}
-      className="w-full max-w-2xl"
-    >
-      <PlotTitle>Wave comparison</PlotTitle>
-      <PlotDescription>
+    <div className="grid w-full max-w-2xl gap-4">
+      <h3 className="font-semibold">Wave comparison</h3>
+      <p className="text-sm text-muted-foreground">
         Adjust the model amplitude while the reference and observations stay
         fixed.
-      </PlotDescription>
-      <PlotCanvas height={360}>
-        <PlotGrid />
-        <PlotXAxis label="Time (s)" />
-        <PlotYAxis label="Displacement (m)" />
-        <PlotData>
-          <PlotReferenceLine y={0} />
+      </p>
+      <ChartContainer config={config} className="h-[360px] w-full">
+        <ComposedChart
+          accessibilityLayer
+          aria-label="Wave comparison"
+          margin={{ bottom: 20, left: 8, right: 24 }}
+        >
+          <CartesianGrid />
+          <XAxis
+            dataKey="x"
+            type="number"
+            domain={[...xDomain]}
+            allowDataOverflow
+            label={{ value: "Time (s)", position: "insideBottom", offset: -12 }}
+          />
+          <YAxis type="number" domain={[-3, 3]} allowDataOverflow />
+          <ReferenceLine y={0} />
           <PlotFunction
-            id="model"
-            label="Model"
+            name="model"
             fn={(x) => amplitude * Math.sin(x)}
-            color="var(--chart-1)"
+            xDomain={xDomain}
+            stroke="var(--color-model)"
           />
-          <PlotLine
-            id="reference"
-            label="Reference"
+          <Line
+            name="reference"
             data={reference}
-            color="var(--chart-2)"
-            strokeStyle="dashed"
-            interpolation="monotone"
+            dataKey="y"
+            stroke="var(--color-reference)"
+            strokeDasharray="6 4"
+            type="monotone"
+            dot={false}
+            isAnimationActive={false}
           />
-          <PlotScatter
-            id="observations"
-            label="Observations"
+          <Scatter
+            name="observations"
             data={observations}
-            color="var(--chart-3)"
-            marker="diamond"
-            markerSize={4}
+            dataKey="y"
+            fill="var(--color-observations)"
+            shape="diamond"
+            isAnimationActive={false}
           />
-        </PlotData>
-      </PlotCanvas>
-      <PlotLegend />
+          <ChartTooltip content={<ChartTooltipContent />} />
+          <ChartLegend content={<ChartLegendContent nameKey="name" />} />
+        </ComposedChart>
+      </ChartContainer>
       <PlotControls>
         <PlotSlider
           label="Amplitude"
@@ -87,6 +104,6 @@ export function PlotDemo() {
           formatValue={(value) => value.toFixed(1)}
         />
       </PlotControls>
-    </Plot>
+    </div>
   );
 }

@@ -5,7 +5,7 @@
       "name": "plot",
       "type": "registry:ui",
       "title": "Plot",
-      "description": "Composable SVG plots with explicit axes, data layers, legends, controls, and configurable line styles.",
+      "description": "Function sampling, parameter controls, and heatmaps for shadcn charts and Recharts.",
       "files": [
         {
           "path": "lib/data.ts",
@@ -13,39 +13,9 @@
           "target": "@lib/plot/data.ts"
         },
         {
-          "path": "lib/paths.ts",
-          "type": "registry:lib",
-          "target": "@lib/plot/paths.ts"
-        },
-        {
-          "path": "lib/scales.ts",
-          "type": "registry:lib",
-          "target": "@lib/plot/scales.ts"
-        },
-        {
-          "path": "lib/ticks.ts",
-          "type": "registry:lib",
-          "target": "@lib/plot/ticks.ts"
-        },
-        {
-          "path": "ui/plot-axis.tsx",
-          "type": "registry:ui",
-          "target": "@ui/plot/plot-axis.tsx"
-        },
-        {
-          "path": "ui/plot-context.tsx",
-          "type": "registry:ui",
-          "target": "@ui/plot/plot-context.tsx"
-        },
-        {
           "path": "ui/plot-controls.tsx",
           "type": "registry:ui",
           "target": "@ui/plot/plot-controls.tsx"
-        },
-        {
-          "path": "ui/plot-frame.tsx",
-          "type": "registry:ui",
-          "target": "@ui/plot/plot-frame.tsx"
         },
         {
           "path": "ui/plot-heatmap.tsx",
@@ -53,45 +23,25 @@
           "target": "@ui/plot/plot-heatmap.tsx"
         },
         {
-          "path": "ui/plot-histogram.tsx",
-          "type": "registry:ui",
-          "target": "@ui/plot/plot-histogram.tsx"
-        },
-        {
-          "path": "ui/plot-legend.tsx",
-          "type": "registry:ui",
-          "target": "@ui/plot/plot-legend.tsx"
-        },
-        {
           "path": "ui/plot-line.tsx",
           "type": "registry:ui",
           "target": "@ui/plot/plot-line.tsx"
-        },
-        {
-          "path": "ui/plot-reference-line.tsx",
-          "type": "registry:ui",
-          "target": "@ui/plot/plot-reference-line.tsx"
-        },
-        {
-          "path": "ui/plot-scatter.tsx",
-          "type": "registry:ui",
-          "target": "@ui/plot/plot-scatter.tsx"
         },
         {
           "path": "ui/plot.tsx",
           "type": "registry:ui",
           "target": "@ui/plot/plot.tsx"
         }
-      ]
+      ],
+      "dependencies": ["recharts@3.8.0"],
+      "registryDependencies": ["chart", "slider"]
     },
     {
       "name": "function-plot",
       "type": "registry:ui",
       "title": "Function Plot",
-      "description": "Interactive function curves with generated parameter sliders and SVG line styles.",
-      "registryDependencies": [
-        "EdwardAstill/edcn/plot"
-      ],
+      "description": "Interactive function curves with generated shadcn sliders and Recharts rendering.",
+      "registryDependencies": ["EdwardAstill/edcn/plot"],
       "files": [
         {
           "path": "components/function-plot.tsx",

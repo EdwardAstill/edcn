@@ -14,6 +14,7 @@ import {
   useMemo,
   useReducer,
   useRef,
+  useState,
   useSyncExternalStore,
 } from 'react'
 
@@ -44,6 +45,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 
+import { RelationPlot } from '@/registry/calculator/ui/relation-plot'
 import { ResultCard } from '@/registry/calculator/ui/result-card'
 import type { RelationAst } from '@/registry/calculator/lib/dsl/ast'
 import { relationToMathMl } from '@/registry/calculator/lib/dsl/mathml'
@@ -85,6 +87,7 @@ function parseEditor(source: string): EditorParseState {
 export function ScientificCalculator({ solverClient }: ScientificCalculatorProps) {
   const client = useMemo(() => solverClient ?? createSolverClient(), [solverClient])
   const [state, dispatch] = useReducer(calculatorReducer, initialCalculatorState)
+  const [activeTab, setActiveTab] = useState('calculator')
   const editorRef = useRef<HTMLInputElement>(null)
   const relationSequence = useRef(0)
   const requestSequence = useRef(0)
@@ -188,14 +191,14 @@ export function ScientificCalculator({ solverClient }: ScientificCalculatorProps
       <Card>
         <CardContent>
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]">
-            <Tabs defaultValue="calculator" className="min-w-0 gap-4">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="min-w-0 gap-4">
               <div className="flex flex-wrap items-center gap-2">
                 <TabsList aria-label="Workspace tool">
                   <TabsTrigger value="calculator">
                     <Calculator /> Calculator
                   </TabsTrigger>
-                  <TabsTrigger value="plot" disabled aria-label="Plot — V2">
-                    <ChartNoAxesColumn /> Plot <Badge variant="secondary">V2</Badge>
+                  <TabsTrigger value="plot">
+                    <ChartNoAxesColumn /> Plot
                   </TabsTrigger>
                 </TabsList>
                 <Button
@@ -281,6 +284,9 @@ export function ScientificCalculator({ solverClient }: ScientificCalculatorProps
                   ))}
                 </Tabs>
               </TabsContent>
+              <TabsContent value="plot">
+                {activeTab === 'plot' ? <RelationPlot relations={state.relations} /> : null}
+              </TabsContent>
             </Tabs>
 
             <Separator className="hidden lg:block" orientation="vertical" />
@@ -333,6 +339,7 @@ export function ScientificCalculator({ solverClient }: ScientificCalculatorProps
                               size="icon-sm"
                               aria-label={`Edit ${relation.source}`}
                               onClick={() => {
+                                setActiveTab('calculator')
                                 dispatch({ type: 'edit', id: relation.id })
                                 queueMicrotask(() => editorRef.current?.focus())
                               }}

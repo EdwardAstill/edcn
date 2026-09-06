@@ -1,21 +1,20 @@
 "use client";
 
 import * as React from "react";
+import { CartesianGrid, LineChart, XAxis, YAxis } from "recharts";
 import {
-  Plot,
-  PlotTitle,
-  PlotCanvas,
-  PlotXAxis,
-  PlotYAxis,
-  PlotGrid,
-  PlotData,
+  ChartContainer,
+  ChartLegend,
+  ChartLegendContent,
+  ChartTooltip,
+  ChartTooltipContent,
+  type ChartConfig,
+} from "@/components/ui/chart";
+import {
   PlotFunction,
-  PlotLegend,
   PlotControls,
   PlotSlider,
-  type LineProps,
-  type LineVariant,
-  type LegacyPlotProps,
+  type PlotFunctionProps,
 } from "@/registry/plot/ui/plot";
 import { sampleFunction, type ParameterValues } from "@/registry/plot/lib/data";
 
@@ -36,13 +35,27 @@ export interface FunctionCurve {
   fn: (x: number, parameters: Readonly<ParameterValues>) => number;
   parameters?: Record<string, ParameterDefinition>;
   samples?: number;
-  variant?: LineVariant;
-  line?: Omit<LineProps, "data" | "xScale" | "yScale" | "defined">;
+  variant?: "solid" | "dashed" | "dotted" | "dash-dot";
+  line?: Omit<PlotFunctionProps, "fn" | "parameters" | "xDomain" | "samples">;
 }
 
-export interface FunctionPlotProps
-  extends Omit<LegacyPlotProps, "children" | "className"> {
+export interface FunctionPlotProps {
   curves: readonly FunctionCurve[];
+  xDomain: readonly [number, number];
+  yDomain: readonly [number, number];
+  width?: number;
+  height?: number;
+  margin?: React.ComponentProps<typeof LineChart>["margin"];
+  xScaleType?: "linear" | "log";
+  yScaleType?: "linear" | "log";
+  xLabel?: string;
+  yLabel?: string;
+  xTickFormat?: (value: number) => string;
+  yTickFormat?: (value: number) => string;
+  xNumTicks?: number;
+  yNumTicks?: number;
+  title?: string;
+  description?: string;
   samples?: number;
   showControls?: boolean;
   showLegend?: boolean;
@@ -78,10 +91,11 @@ export function FunctionPlot({
   onParameterChange,
   xDomain,
   yDomain,
-  xScaleType,
-  yScaleType,
-  xLogBase,
-  yLogBase,
+  width = 640,
+  height = 360,
+  margin = { top: 16, right: 24, bottom: 20, left: 8 },
+  xScaleType = "linear",
+  yScaleType = "linear",
   xLabel,
   yLabel,
   xTickFormat,
@@ -89,51 +103,107 @@ export function FunctionPlot({
   xNumTicks,
   yNumTicks,
   title,
-  ...canvasProps
+  description,
 }: FunctionPlotProps) {
+  const titleId = React.useId();
+  const descriptionId = React.useId();
   const [parameterValues, setParameterValues] = React.useState<
     Record<string, ParameterValues>
   >({});
+  const config: ChartConfig = Object.fromEntries(
+    curves.map((curve, index) => [
+      curve.id,
+      {
+        label: curve.label ?? curve.id,
+        color: curve.line?.stroke ?? `var(--chart-${(index % 5) + 1})`,
+      },
+    ]),
+  );
   return (
-    <Plot
-      xDomain={xDomain}
-      yDomain={yDomain}
-      xScaleType={xScaleType}
-      yScaleType={yScaleType}
-      xLogBase={xLogBase}
-      yLogBase={yLogBase}
-      className={className}
-    >
-      {title && <PlotTitle>{title}</PlotTitle>}
-      <PlotCanvas {...canvasProps} className={plotClassName}>
-        <PlotGrid xNumTicks={xNumTicks} yNumTicks={yNumTicks} />
-        <PlotXAxis
-          label={xLabel}
-          tickFormat={xTickFormat}
-          numTicks={xNumTicks}
-        />
-        <PlotYAxis
-          label={yLabel}
-          tickFormat={yTickFormat}
-          numTicks={yNumTicks}
-        />
-        <PlotData>
-          {curves.map((curve, index) => (
+    <div className={`grid min-w-0 gap-4 ${className ?? ""}`.trim()}>
+      {title && (
+        <h3 id={titleId} className="text-base font-semibold">
+          {title}
+        </h3>
+      )}
+      {description && (
+        <p id={descriptionId} className="text-sm text-muted-foreground">
+          {description}
+        </p>
+      )}
+      <ChartContainer
+        config={config}
+        className={plotClassName}
+        style={{ height, width: "100%" }}
+        initialDimension={{ width, height }}
+      >
+        <LineChart
+          accessibilityLayer
+          aria-label={title ? undefined : "Function plot"}
+          aria-labelledby={title ? titleId : undefined}
+          aria-describedby={description ? descriptionId : undefined}
+          margin={margin}
+        >
+          <CartesianGrid />
+          <XAxis
+            dataKey="x"
+            type="number"
+            domain={[...xDomain]}
+            scale={xScaleType}
+            allowDataOverflow
+            tickFormatter={xTickFormat}
+            tickCount={xNumTicks}
+            label={
+              xLabel
+                ? { value: xLabel, position: "insideBottom", offset: -12 }
+                : undefined
+            }
+          />
+          <YAxis
+            type="number"
+            domain={[...yDomain]}
+            scale={yScaleType}
+            allowDataOverflow
+            tickFormatter={yTickFormat}
+            tickCount={yNumTicks}
+            label={
+              yLabel
+                ? { value: yLabel, angle: -90, position: "insideLeft" }
+                : undefined
+            }
+          />
+          {curves.map((curve) => (
             <PlotFunction
               key={curve.id}
+              name={curve.id}
+              stroke={config[curve.id]!.color}
+              strokeDasharray={
+                curve.variant === "dashed"
+                  ? "6 4"
+                  : curve.variant === "dotted"
+                    ? "2 4"
+                    : curve.variant === "dash-dot"
+                      ? "6 4 2 4"
+                      : undefined
+              }
               {...curve.line}
-              id={curve.id}
-              label={curve.label}
               fn={curve.fn}
               parameters={valuesFor(curve, parameterValues)}
+              xDomain={xDomain}
               samples={curve.samples ?? samples}
-              variant={curve.line?.variant ?? curve.variant}
-              color={`var(--chart-${(index % 5) + 1}, var(--primary))`}
+              defined={(x, y) =>
+                (xScaleType !== "log" || x > 0) &&
+                (yScaleType !== "log" || y > 0) &&
+                (!curve.line?.defined || curve.line.defined(x, y))
+              }
             />
           ))}
-        </PlotData>
-      </PlotCanvas>
-      {showLegend && <PlotLegend />}
+          <ChartTooltip content={<ChartTooltipContent />} />
+          {showLegend && (
+            <ChartLegend content={<ChartLegendContent nameKey="name" />} />
+          )}
+        </LineChart>
+      </ChartContainer>
       {showControls &&
         curves.some(
           (curve) => Object.keys(curve.parameters ?? {}).length > 0,
@@ -171,6 +241,6 @@ export function FunctionPlot({
               ))}
           </PlotControls>
         )}
-    </Plot>
+    </div>
   );
 }

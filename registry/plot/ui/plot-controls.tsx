@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { Slider } from "@/components/ui/slider";
 
 export function PlotControls({
   className,
@@ -14,18 +15,7 @@ export function PlotControls({
   );
 }
 
-export interface PlotSliderProps
-  extends Omit<
-    React.ComponentProps<"input">,
-    | "type"
-    | "value"
-    | "defaultValue"
-    | "onChange"
-    | "onInput"
-    | "min"
-    | "max"
-    | "step"
-  > {
+export interface PlotSliderProps {
   label: string;
   value: number;
   onValueChange: (value: number) => void;
@@ -33,6 +23,9 @@ export interface PlotSliderProps
   max: number;
   step?: number;
   formatValue?: (value: number) => string;
+  id?: string;
+  className?: string;
+  disabled?: boolean;
 }
 
 export function PlotSlider({
@@ -45,33 +38,37 @@ export function PlotSlider({
   formatValue = String,
   id,
   className,
-  ...props
+  disabled,
 }: PlotSliderProps) {
   const generatedId = React.useId();
   const inputId = id ?? generatedId;
+  const labelId = `${inputId}-label`;
+  const outputId = `${inputId}-value`;
   return (
-    <div className="grid gap-2">
+    <div className={`grid gap-2 ${className ?? ""}`.trim()}>
       <div className="flex items-baseline justify-between gap-4">
-        <label htmlFor={inputId} className="text-sm">
+        <label id={labelId} htmlFor={inputId} className="text-sm">
           {label}
         </label>
         <output
-          htmlFor={inputId}
+          id={outputId}
           className="font-mono text-sm tabular-nums text-muted-foreground"
         >
           {formatValue(value)}
         </output>
       </div>
-      <input
-        {...props}
+      <Slider
         id={inputId}
-        type="range"
+        aria-labelledby={labelId}
+        aria-describedby={outputId}
+        value={[value]}
+        onValueChange={(next) =>
+          onValueChange(Array.isArray(next) ? next[0]! : next)
+        }
         min={min}
         max={max}
         step={step ?? (Math.abs(max - min) / 100 || 1)}
-        value={value}
-        onInput={(event) => onValueChange(event.currentTarget.valueAsNumber)}
-        className={`h-2 w-full cursor-pointer accent-primary ${className ?? ""}`.trim()}
+        disabled={disabled}
       />
     </div>
   );

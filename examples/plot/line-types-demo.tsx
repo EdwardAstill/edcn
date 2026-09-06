@@ -1,79 +1,41 @@
-import {
-  Plot,
-  PlotTitle,
-  PlotDescription,
-  PlotCanvas,
-  PlotXAxis,
-  PlotYAxis,
-  PlotData,
-  PlotGrid,
-  PlotLine,
-  PlotLegend,
-  type Point,
-  type LineInterpolation,
-  type LineVariant,
-} from "@/registry/plot/ui/plot";
+import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
+import { ChartContainer } from "@/components/ui/chart";
 
 export const description =
-  "Straight, step, and monotone connections with independent stroke styles and point markers.";
-
-const points: Point[] = [
-  [0, 0],
-  [1, 1.5],
-  [2, 0.5],
-  [3, 2],
-  [4, 1],
-];
-const styles: {
-  interpolation: LineInterpolation;
-  strokeStyle: LineVariant;
-  label: string;
-}[] = [
-  { interpolation: "linear", strokeStyle: "solid", label: "Linear · solid" },
-  {
-    interpolation: "step-before",
-    strokeStyle: "dashed",
-    label: "Step before · dashed",
-  },
-  {
-    interpolation: "step-after",
-    strokeStyle: "dotted",
-    label: "Step after · dotted",
-  },
-  {
-    interpolation: "monotone",
-    strokeStyle: "dash-dot",
-    label: "Monotone · dash-dot",
-  },
-];
+  "Use Recharts directly for line interpolation, strokes, and markers.";
+const data = [0, 1.5, 0.5, 2, 1].map((y, x) => ({ x, y }));
+const styles = [
+  { type: "linear", dash: undefined, label: "Linear · solid" },
+  { type: "stepBefore", dash: "6 4", label: "Step before · dashed" },
+  { type: "stepAfter", dash: "2 4", label: "Step after · dotted" },
+  { type: "monotone", dash: "6 4 2 4", label: "Monotone · dash-dot" },
+] as const;
 
 export function LineTypesDemo() {
   return (
     <div className="grid w-full max-w-4xl gap-6 sm:grid-cols-2">
-      {styles.map(({ interpolation, strokeStyle, label }, index) => (
-        <Plot key={interpolation} xDomain={[0, 4]} yDomain={[-0.5, 2.5]}>
-          <PlotTitle>{label}</PlotTitle>
-          <PlotDescription>
-            The same five points with a different connection and stroke.
-          </PlotDescription>
-          <PlotCanvas width={400} height={260}>
-            <PlotGrid />
-            <PlotXAxis label="x" />
-            <PlotYAxis label="y" />
-            <PlotData>
-              <PlotLine
-                id={interpolation}
-                label={label}
-                data={points}
-                interpolation={interpolation}
-                strokeStyle={strokeStyle}
-                marker="circle"
-                color={`var(--chart-${index + 1})`}
+      {styles.map(({ type, dash, label }, index) => (
+        <div key={type} className="grid gap-4">
+          <h3 className="font-semibold">{label}</h3>
+          <ChartContainer
+            config={{ y: { label, color: `var(--chart-${index + 1})` } }}
+            className="h-[260px] w-full"
+          >
+            <LineChart data={data} accessibilityLayer aria-label={label}>
+              <CartesianGrid />
+              <XAxis dataKey="x" type="number" domain={[0, 4]} />
+              <YAxis domain={[-0.5, 2.5]} />
+              <Line
+                dataKey="y"
+                type={type}
+                strokeDasharray={dash}
+                stroke="var(--color-y)"
+                dot
+                isAnimationActive={false}
               />
-            </PlotData>
-          </PlotCanvas>
-          <PlotLegend />
-        </Plot>
+            </LineChart>
+          </ChartContainer>
+        </div>
       ))}
     </div>
   );

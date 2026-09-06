@@ -32,7 +32,7 @@ registry/
     styles/                      # quiz stylesheet
   plot/
     registry.json                # plot primitives and function plot
-    ui/                          # dependency-free SVG plotting primitives
+    ui/                          # function plotting and controls for shadcn/Recharts
   code/
     registry.json                # runnable code playground
     hooks/                       # useCodeRuntime hook and colocated workers
@@ -66,7 +66,7 @@ bunx shadcn@latest add EdwardAstill/edcn/calculator
 These are separate installs. Quiz does not pull in workspace or tabs. See the
 [quiz guide](registry/quiz/README.md) for its API and required stylesheet import,
 the [workspace guide](registry/workspace/README.md) for workspace usage, the
-[plot guide](registry/plot/README.md) for plotting primitives, and the
+[plot guide](registry/plot/README.md) for interactive function plots, and the
 [code guide](registry/code/README.md) for the runnable playground and its
 worker runtimes.
 

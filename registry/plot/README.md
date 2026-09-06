@@ -1,114 +1,115 @@
 # Plot
 
-Composable, dependency-free SVG plots for React. Build a plot from explicit axes,
-data layers, a visible title, a legend, and optional controls. All data layers use
-the same canvas scales. Source is copied into your project by the shadcn CLI.
+Interactive mathematical plots built on shadcn charts and Recharts. Plot adds
+function sampling, labeled parameter controls, histogram binning, and numeric
+heatmaps. Recharts handles axes, scales, lines, legends, tooltips, and clipping.
 
 ## Install
-
-```sh
-bunx shadcn@latest add EdwardAstill/edcn/plot
-```
-
-For the ready-made interactive function plot:
 
 ```sh
 bunx shadcn@latest add EdwardAstill/edcn/function-plot
 ```
 
-The function-plot item installs the plot primitives automatically. Neither item
-requires a runtime dependency beyond React. Controls use a native range input.
+For the individual extensions:
 
-## Structure
-
-```text
-Plot                         Domains, scale settings, and series metadata
-├── PlotTitle                Visible heading and accessible canvas name
-├── PlotDescription          Optional explanation
-├── PlotCanvas               Responsive SVG, dimensions, margins, and scales
-│   ├── PlotGrid             Grid aligned with scale ticks
-│   ├── PlotXAxis            Horizontal axis, ticks, and label
-│   ├── PlotYAxis            Vertical axis, ticks, and label
-│   └── PlotData             Layers clipped to the plotting area
-│       ├── PlotLine         Connected data points
-│       ├── PlotFunction     Function sampled into a line
-│       ├── PlotScatter      Point markers
-│       ├── PlotHistogram    Binned observations
-│       ├── PlotHeatmap      Numeric grid
-│       └── PlotReferenceLine  Horizontal or vertical reference
-├── PlotLegend               Matching labels and series symbols
-└── PlotControls             HTML control layout
-    └── PlotSlider           Label, range input, and formatted value
+```sh
+bunx shadcn@latest add EdwardAstill/edcn/plot
 ```
 
-`PlotCanvas` is the SVG boundary: put axes and data inside it, and HTML headings,
-legends, and controls outside it. Include only the parts you need. SVG layers
-paint in child order; place the grid before the data. Each `PlotData` creates a
-unique clip path. `usePlot()` exposes the canvas scales and inner dimensions for
-custom SVG components.
+The registry installs the official `chart` and `slider` dependencies and Recharts.
+Shared shadcn components are external dependencies, not copies in the plot payload.
 
-## Compose a plot
+## Interactive functions
 
-Imports below use the default `@/components/ui` installation alias. Adjust it to
-match your project's `components.json` aliases. In this repository, examples use
-`@/registry/plot/ui/plot` instead.
+```tsx
+"use client";
+
+import { FunctionPlot } from "@/components/plot/function-plot";
+
+export function Wave() {
+  return (
+    <FunctionPlot
+      title="Sine wave"
+      xDomain={[-6, 6]}
+      yDomain={[-3, 3]}
+      curves={[
+        {
+          id: "wave",
+          label: "Wave",
+          fn: (x, p) => p.amplitude! * Math.sin(x),
+          parameters: {
+            amplitude: { value: 1, min: 0, max: 3, step: 0.1 },
+          },
+        },
+      ]}
+    />
+  );
+}
+```
+
+`FunctionPlot` generates shadcn sliders from each curve's `parameters`, keeps
+parameter state, and redraws curves immediately. Parameter definitions accept
+`label` and `formatValue`; `onParameterChange(curveId, values)` reports changes.
+Use stable, unique curve ids. Parameter `value` is the initial value until edited;
+remount the component to reset all parameters.
+
+`showControls` and `showLegend` default to true. `title` and `description` provide
+visible, accessible chart context. `height` defaults to 360; `width` defaults to
+640 and supplies the initial responsive measurement. The chart then fills its
+container. `margin`, axis labels, tick formatters/counts, and `linear`/`log` scale
+types remain configurable. Log domains must be positive; nonpositive curve values
+are omitted on logarithmic axes.
+
+A curve's `line` accepts Recharts line options, including `stroke`, `strokeWidth`,
+`strokeDasharray`, `type`, and `dot`. The older `variant` stroke presets remain
+available. Curve-level `samples` overrides the component default of 400.
+
+## Compose with shadcn and Recharts
+
+Use Recharts components directly when you need custom axes, reference lines,
+scatter points, or other chart types. `PlotFunction` adds a sampled line to the
+same chart; it requires a numeric `XAxis` with `dataKey="x"`.
 
 ```tsx
 "use client";
 
 import * as React from "react";
+import { CartesianGrid, LineChart, XAxis, YAxis } from "recharts";
 import {
-  Plot,
-  PlotTitle,
-  PlotDescription,
-  PlotCanvas,
-  PlotGrid,
-  PlotXAxis,
-  PlotYAxis,
-  PlotData,
+  ChartContainer,
+  ChartLegend,
+  ChartLegendContent,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
+import {
   PlotFunction,
-  PlotScatter,
-  PlotReferenceLine,
-  PlotLegend,
   PlotControls,
   PlotSlider,
 } from "@/components/ui/plot/plot";
 
-export function WavePlot() {
+export function ControlledWave() {
   const [amplitude, setAmplitude] = React.useState(1);
-
   return (
-    <Plot xDomain={[-6, 6]} yDomain={[-3, 3]}>
-      <PlotTitle>Wave comparison</PlotTitle>
-      <PlotDescription>Adjust the model amplitude.</PlotDescription>
-
-      <PlotCanvas height={360}>
-        <PlotGrid />
-        <PlotXAxis label="Time (s)" />
-        <PlotYAxis label="Displacement (m)" />
-        <PlotData>
-          <PlotReferenceLine y={0} />
+    <div className="grid gap-4">
+      <ChartContainer
+        config={{ wave: { label: "Wave", color: "var(--chart-1)" } }}
+        className="h-[360px] w-full"
+      >
+        <LineChart accessibilityLayer aria-label="Adjustable wave">
+          <CartesianGrid />
+          <XAxis dataKey="x" type="number" domain={[-6, 6]} allowDataOverflow />
+          <YAxis domain={[-3, 3]} allowDataOverflow />
           <PlotFunction
-            id="model"
-            label="Model"
+            name="wave"
             fn={(x) => amplitude * Math.sin(x)}
-            color="var(--chart-1)"
+            xDomain={[-6, 6]}
+            stroke="var(--color-wave)"
           />
-          <PlotScatter
-            id="observations"
-            label="Observations"
-            data={[
-              [-2, -0.9],
-              [0, 0.1],
-              [2, 0.8],
-            ]}
-            color="var(--chart-2)"
-            marker="diamond"
-          />
-        </PlotData>
-      </PlotCanvas>
-
-      <PlotLegend />
+          <ChartTooltip content={<ChartTooltipContent />} />
+          <ChartLegend content={<ChartLegendContent nameKey="name" />} />
+        </LineChart>
+      </ChartContainer>
       <PlotControls>
         <PlotSlider
           label="Amplitude"
@@ -117,113 +118,66 @@ export function WavePlot() {
           min={0}
           max={3}
           step={0.1}
-          formatValue={(value) => value.toFixed(1)}
+          formatValue={(n) => n.toFixed(1)}
         />
       </PlotControls>
-    </Plot>
+    </div>
   );
 }
 ```
 
-The parent owns parameter state. One slider can update several series, and
-controls can be placed wherever the layout needs them.
+`PlotFunction` samples `fn(x, parameters)` into `{ x, y }` data. Its `name` should
+match the chart config key. With several functions sharing `dataKey="y"`, use
+`ChartLegendContent nameKey="name"` to resolve the correct labels.
 
-## Lines and markers
+Non-finite results and evaluation errors become nulls, leaving gaps. A
+`defined(x, y)` predicate can exclude known discontinuities or nonpositive log
+values. Sampling is uniform in x and does not detect every finite jump or
+asymptote. Recharts line options pass through; animation and point markers are
+disabled by default for responsive slider updates.
 
-`PlotLine` accepts `data: readonly Point[]`, where `Point` is `[x, y]`.
-`PlotFunction` accepts `fn(x, parameters)`, optional `parameters`, and `samples`
-(default 400). Both expose the same rendering options:
+`PlotControls` and `PlotSlider` work outside any chart context, so one parent-owned
+parameter can control several curves or charts. `PlotSlider` adds a label and
+formatted output to the official shadcn slider, with native keyboard support.
 
-| Option          | Values                                            | Default                          |
-| --------------- | ------------------------------------------------- | -------------------------------- |
-| `strokeStyle`   | `solid`, `dashed`, `dotted`, `dash-dot`           | `solid`                          |
-| `interpolation` | `linear`, `step-before`, `step-after`, `monotone` | `linear`                         |
-| `marker`        | `none`, `circle`, `square`, `diamond`             | `none`                           |
-| `markerSize`    | Marker radius / half-width in SVG units           | `3`                              |
-| `color`         | CSS color or theme variable                       | `var(--chart-1, var(--primary))` |
+## Distributions and heatmaps
 
-`step-before` changes y before x; `step-after` changes x before y. Monotone
-interpolation preserves local extrema for strictly increasing or decreasing x.
-Runs with repeated or unordered x values fall back to straight connections.
-Points retain their input order; the renderer does not sort them.
+- `binCounts(values, bins, domain?)` returns `counts`, `low`, `high`, and `binWidth`.
+  Transform these into rows for a Recharts `BarChart`; the distribution example
+  demonstrates this. The final bin includes the upper domain bound.
+- `PlotHeatmap` renders `data[column][row]` using Recharts `ReferenceArea` cells.
+  Provide explicit `xDomain` and `yDomain` for the grid, numeric parent axes
+  (`XAxis dataKey="x" type="number"`), and `colorScale(normalizedValue)`.
+  Optional `domain` controls color normalization; otherwise finite cells define
+  the extent. Invalid cells are skipped. `xAxisId`/`yAxisId` select parent axes,
+  and `onCellClick(column, row, value)` handles cell clicks. Cells use equal data
+  intervals and Recharts clipping. Provide a color key separately if needed;
+  reference areas do not generate legend entries or tooltip data.
+- `sampleFunction` still returns `[x, y]` tuples for standalone use; errors become
+  `NaN`. `dataExtent` still finds finite grid bounds.
 
-Standard SVG path properties are supported, including `stroke`, `strokeWidth`,
-`strokeDasharray`, and `strokeLinecap`. Explicit SVG stroke properties override
-the color/preset. The legacy `variant` prop remains an alias for stroke style;
-`strokeStyle` takes precedence when both are supplied.
+## Migration from the SVG implementation
 
-Non-finite coordinates and coordinates invalid for a log scale create gaps.
-Function evaluation errors also create gaps. Sampling does not detect every
-finite jump or asymptote; use `defined` or explicit missing points where needed.
-Function markers appear at every sampled point, so use fewer samples when
-showing markers.
+This is a breaking change to the low-level plot API. The standalone SVG engine,
+legacy render props, custom scales, tick generation, and path builder have been
+removed. `FunctionPlot` and its `ui/function-plot` entry point remain, but `line`
+now uses Recharts options. Custom logarithm bases are configured on Recharts axes
+in composed charts instead of through `FunctionPlot`.
 
-`PlotScatter` uses the same marker choices with a default of `circle`.
-`PlotReferenceLine` takes either `x` or `y` and an optional `strokeStyle`; it does
-not create a legend entry.
+| Previous API                                   | Replacement                                                                              |
+| ---------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `Plot`, `PlotCanvas`, `Frame`                  | `ChartContainer` + Recharts `LineChart`/`ComposedChart`                                  |
+| `PlotTitle`, `PlotDescription`                 | Ordinary headings and paragraphs with chart ARIA references                              |
+| `PlotXAxis`, `PlotYAxis`, `PlotGrid`           | `XAxis`, `YAxis`, `CartesianGrid`                                                        |
+| `PlotLine`, `PlotScatter`, `PlotReferenceLine` | `Line`, `Scatter`, `ReferenceLine`                                                       |
+| `PlotData`                                     | Put series directly inside the Recharts chart; use `allowDataOverflow` for fixed domains |
+| `PlotLegend`                                   | `ChartLegend` + `ChartLegendContent`                                                     |
+| `PlotHistogram`                                | `binCounts` + `BarChart`/`Bar`                                                           |
+| `strokeStyle`, `interpolation`, `marker`       | `strokeDasharray`, `type`, `dot`/scatter `shape`                                         |
+| `usePlot`, `scale`, `ticks`, `linePath`        | Recharts axes, hooks, and renderers                                                      |
 
-## Axes and data coordinates
-
-- Set `xDomain` and `yDomain` on `Plot`. Domains are explicit and do not auto-fit
-  when sliders move. `xScaleType` / `yScaleType` accept `linear` or `log`;
-  logarithmic domains must be positive. Log bases default to 10.
-- `PlotCanvas` defaults to 640 × 360 and scales to its container while preserving
-  aspect ratio. Set `width`, `height`, and `margin` here. Defaults reserve room
-  for bottom/left labels; increase margins for long labels or top/right axes.
-- Axes accept `label`, `tickFormat`, `numTicks`, and `tickSize`. X-axis sides are
-  `bottom` / `top`; Y-axis sides are `left` / `right`.
-- `PlotGrid` accepts `x`, `y`, `xNumTicks`, and `yNumTicks`. Use matching tick counts
-  on the grid and axes when customizing them.
-- `PlotHistogram` takes `values`, `bins`, optional binning `domain` (defaulting to
-  the sorted x domain), `color`, and pixel `gap`. Counts map through the y scale;
-  set the y domain to the intended count range. The default baseline is zero,
-  or the lower domain bound for log y; override it with `baseline`.
-- `PlotHeatmap` takes columns of numeric values (`data[column][row]`) and
-  `colorScale(normalizedValue)`. Its optional `domain` controls color normalization.
-  Optional `xDomain` / `yDomain` define the grid's data-space bounds, defaulting to
-  the canvas domains. Rows increase along the y domain. Cells use equal intervals
-  in data space, so their screen widths/heights can differ on log scales.
-
-## Legend and accessibility
-
-Give each series a stable, unique `id` within its plot and an optional `label`
-(defaulting to its id). `PlotLegend` reads registered series metadata, including
-stroke patterns and markers. It updates when mounted series change, including
-series inside custom React components. Registration happens after client mount;
-the automatic legend is initially empty in server-rendered HTML. Legend order
-follows series registration order. Set distinct colors explicitly when needed.
-
-Histogram and heatmap entries use a color swatch; the heatmap swatch represents
-the midpoint of its color scale, not a continuous color bar.
-
-`PlotTitle` and `PlotDescription` connect to the canvas's accessible name and
-summary. Without a visible title, pass `aria-label` to `PlotCanvas` for a useful
-name. Sliders associate their labels and outputs with unique input ids and
-support native keyboard interaction. Color, dash patterns, and markers can be
-combined to distinguish series without relying solely on color.
-
-## FunctionPlot shortcut and compatibility
-
-`FunctionPlot` lives in `components/function-plot.tsx` and composes the primitives
-above. Its existing `curves`, generated parameter sliders, `showLegend`,
-`showControls`, and `onParameterChange` API remain available. Titles now render as
-visible headings. The previous `ui/function-plot` entry point re-exports it.
-
-The original `<Plot width={640} height={320} ...>` API remains available with
-implicit bottom/left axes and render-prop children receiving the scales. For new
-composition, put dimensions on `PlotCanvas`. Low-level `Frame`, `Axis`, `Line`,
-`Scatter`, `Histogram`, and `Heatmap` exports remain available, alongside `scale`,
-`ticks`, `linePath`, `dataExtent`, `binCounts`, and `sampleFunction`.
-
-## Source layout
-
-- `lib/`: scales, tick generation, paths, sampling, extents, and binning.
-- `ui/`: root/canvas/context, axes/grid, data renderers, legend, and controls.
-  `plot.tsx` is the public entry point; `plot-frame.tsx` preserves legacy framing.
-- `components/`: the composed `FunctionPlot` shortcut.
-- [`examples/plot/`](../../examples/plot/): interactive composition, line styles,
-  distributions, and the function shortcut. Examples are not registry payload.
-- [`tests/plot/`](../../tests/plot/): geometry, compatibility, and DOM interactions.
+See [`examples/plot/`](../../examples/plot/) for the migrated examples. They are
+preview code and are not installed as registry items.
 
 ```sh
 bun test tests/plot

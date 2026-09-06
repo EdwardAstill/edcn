@@ -34,8 +34,14 @@ calculations reuse the worker. The worker is bundled into a module Blob.
 The solver returns exact, finite real solutions and distinguishes inconsistent,
 underdetermined, overdefined, unsupported, and unresolved systems. More equation
 rows than distinct unknowns count as overdefined, including redundant rows.
-Plotting controls are disabled in this version. The built-in help describes the
-supported notation.
+The Plot tab graphs ticked equations and single-variable expressions using the
+plot kit. Selection changes update the graph immediately. At most two distinct
+variables may appear across the ticked rows; additional variables show an error.
+Axes use the variable names (preferring `x` horizontally and `y` vertically).
+Bare expressions are graphed as functions of their variable, with the result
+on the other axis (for example, `x^2` means `y=x^2`, and `y^2` means `x=y^2`). Implicit equations
+are numerically approximated in the fixed −10 to 10 window; very small features
+and isolated roots may be missed. Calculus calls must be evaluated before plotting.
 
 ## Source layout
 

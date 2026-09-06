@@ -1,4 +1,4 @@
-import type { Point } from "@/registry/plot/lib/paths";
+export type Point = readonly [number, number];
 export type ParameterValues = Record<string, number>;
 
 export function dataExtent(
