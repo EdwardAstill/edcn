@@ -7,6 +7,7 @@
 import * as React from "react";
 
 import { cn } from "@/lib/utils";
+import { TabsContent } from "@/components/ui/tabs";
 import {
   useViewComponent,
   useWorkspaceDispatch,
@@ -106,10 +107,15 @@ function StackBody({ stackId }: { stackId: string }) {
     : undefined;
 
   return (
-    <>
-      <WorkspaceTabList stackId={stackId} />
-      <StackContent view={activeView ?? null} />
-    </>
+    <WorkspaceTabList stackId={stackId}>
+      {activeView ? (
+        <TabsContent value={activeView.id} className="flex min-h-0 flex-col">
+          <StackContent view={activeView} />
+        </TabsContent>
+      ) : (
+        <StackContent view={null} />
+      )}
+    </WorkspaceTabList>
   );
 }
 

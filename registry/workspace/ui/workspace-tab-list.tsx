@@ -7,6 +7,7 @@
 import * as React from "react";
 
 import { cn } from "@/lib/utils";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   useWorkspaceDispatch,
   useWorkspaceState,
@@ -21,6 +22,7 @@ export interface WorkspaceTabListProps
 export function WorkspaceTabList({
   stackId,
   className,
+  children,
   ...props
 }: WorkspaceTabListProps) {
   const state = useWorkspaceState();
@@ -39,61 +41,55 @@ export function WorkspaceTabList({
   }
 
   return (
-    <div
-      role="tablist"
-      className={cn(
-        "flex h-9 items-stretch gap-0.5 overflow-x-auto border-b bg-muted/40 px-1",
-        className,
-      )}
-      {...props}
+    <Tabs
+      value={stack.activeViewId}
+      onValueChange={(viewId) => {
+        if (typeof viewId === "string") dispatch({ type: "view/activate", viewId });
+      }}
+      className="min-h-0 min-w-0 flex-1 gap-0"
     >
-      {stack.viewIds.map((viewId) => {
-        const view = state.views[viewId];
-        if (!view) return null;
-        const active = stack.activeViewId === viewId;
-        return (
-          <div
-            key={viewId}
-            role="tab"
-            aria-selected={active}
-            tabIndex={0}
-            draggable
-            onDragStart={(event) => startDrag(event, viewId)}
-            onDragEnd={() => dragContext?.endDrag()}
-            onClick={() => dispatch({ type: "view/activate", viewId })}
-            onKeyDown={(event) => {
-              if (event.key === "Enter" || event.key === " ") {
-                dispatch({ type: "view/activate", viewId });
-              }
-            }}
-            className={cn(
-              "group flex max-w-48 shrink-0 cursor-pointer items-center gap-1.5 rounded-md px-2.5 text-sm outline-none select-none",
-              "focus-visible:ring-ring/50 focus-visible:ring-2",
-              active
-                ? "bg-background text-foreground shadow-xs"
-                : "text-muted-foreground hover:bg-accent/60 hover:text-foreground",
-            )}
-          >
-            <span className="truncate">{view.title}</span>
-            {view.closable !== false && <button
-              type="button"
-              aria-label={`Close ${view.title}`}
-              onClick={(event) => {
-                event.stopPropagation();
-                dispatch({ type: "view/close", viewId });
-              }}
-              className={cn(
-                "ml-0.5 flex size-4 shrink-0 items-center justify-center rounded-sm text-muted-foreground/60",
-                "opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100",
-                "hover:bg-accent hover:text-foreground",
-                active && "opacity-70",
-              )}
-            >
-              ×
-            </button>}
-          </div>
-        );
-      })}
-    </div>
+      <div className="shrink-0 overflow-x-auto border-b p-1">
+        <TabsList className={cn("w-max", className)} {...props}>
+          {stack.viewIds.map((viewId) => {
+            const view = state.views[viewId];
+            if (!view) return null;
+            const active = stack.activeViewId === viewId;
+            return (
+              <div
+                key={viewId}
+                draggable
+                onDragStart={(event) => startDrag(event, viewId)}
+                onDragEnd={() => dragContext?.endDrag()}
+                className="group relative h-full shrink-0"
+              >
+                <TabsTrigger
+                  value={viewId}
+                  className={cn("h-full max-w-48 px-2.5", view.closable !== false && "pr-7")}
+                >
+                  <span className="truncate">{view.title}</span>
+                </TabsTrigger>
+                {view.closable !== false && <button
+                  type="button"
+                  aria-label={`Close ${view.title}`}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    dispatch({ type: "view/close", viewId });
+                  }}
+                  className={cn(
+                    "absolute top-1/2 right-1.5 -translate-y-1/2 flex size-4 shrink-0 items-center justify-center rounded-sm text-muted-foreground/60",
+                    "opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100",
+                    "hover:bg-accent hover:text-foreground",
+                    active && "opacity-70",
+                  )}
+                >
+                  ×
+                </button>}
+              </div>
+            );
+          })}
+        </TabsList>
+      </div>
+      {children}
+    </Tabs>
   );
 }

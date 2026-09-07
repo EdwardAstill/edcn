@@ -32,7 +32,7 @@
       "name": "code-editor",
       "type": "registry:ui",
       "title": "Code Editor",
-      "description": "CodeMirror editors for Python, JavaScript, and TypeScript with output panel, copy, enlarge, and run controls.",
+      "description": "CodeMirror editors for plain text, Python, JavaScript, and TypeScript with copy, enlarge, and optional output and run controls.",
       "registryDependencies": [
         "EdwardAstill/edcn/use-code-runtime",
         "input-group"

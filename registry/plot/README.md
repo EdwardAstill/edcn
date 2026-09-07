@@ -1,8 +1,9 @@
 # Plot
 
 Interactive mathematical plots built on shadcn charts and Recharts. Plot adds
-function sampling, labeled parameter controls, histogram binning, and numeric
-heatmaps. Recharts handles axes, scales, lines, legends, tooltips, and clipping.
+function sampling and labeled sliders. Use the standard shadcn card, chart,
+legend, and tooltip components with native Recharts axes. Existing histogram
+binning and heatmap helpers are also available.
 
 ## Install
 
@@ -17,6 +18,7 @@ bunx shadcn@latest add EdwardAstill/edcn/plot
 ```
 
 The registry installs the official `chart` and `slider` dependencies and Recharts.
+`function-plot` also installs the official `card` component.
 Shared shadcn components are external dependencies, not copies in the plot payload.
 
 ## Interactive functions
@@ -30,12 +32,15 @@ export function Wave() {
   return (
     <FunctionPlot
       title="Sine wave"
+      description="Explore the effect of amplitude on a sine wave."
+      xLabel="Phase (rad)"
+      yLabel="Amplitude"
       xDomain={[-6, 6]}
       yDomain={[-3, 3]}
       curves={[
         {
           id: "wave",
-          label: "Wave",
+          label: <span className="font-serif"><var>f</var>(<var>x</var>) = <var>A</var> sin(<var>x</var>)</span>,
           fn: (x, p) => p.amplitude! * Math.sin(x),
           parameters: {
             amplitude: { value: 1, min: 0, max: 3, step: 0.1 },
@@ -47,6 +52,10 @@ export function Wave() {
 }
 ```
 
+`FunctionPlot` renders a shadcn card with a grouped title and description, a
+responsive plot, a wrapping formula legend, and an integrated control footer.
+`controlsClassName` styles the control group.
+
 `FunctionPlot` generates shadcn sliders from each curve's `parameters`, keeps
 parameter state, and redraws curves immediately. Parameter definitions accept
 `label` and `formatValue`; `onParameterChange(curveId, values)` reports changes.
@@ -57,12 +66,31 @@ remount the component to reset all parameters.
 visible, accessible chart context. `height` defaults to 360; `width` defaults to
 640 and supplies the initial responsive measurement. The chart then fills its
 container. `margin`, axis labels, tick formatters/counts, and `linear`/`log` scale
-types remain configurable. Log domains must be positive; nonpositive curve values
+types remain configurable. `xTicks` and `yTicks` accept explicit tick positions
+(for example `[-Math.PI, 0, Math.PI]` with a π tick formatter). Log domains must be positive; nonpositive curve values
 are omitted on logarithmic axes.
 
 A curve's `line` accepts Recharts line options, including `stroke`, `strokeWidth`,
 `strokeDasharray`, `type`, and `dot`. The older `variant` stroke presets remain
 available. Curve-level `samples` overrides the component default of 400.
+
+## Math labels
+
+Shadcn's chart config already accepts React labels. Use ordinary JSX with
+`<var>`, `<sup>`, and `<sub>` for a mathematical key:
+
+```tsx
+const config = {
+  quadratic: {
+    label: <span className="font-serif"><var>y</var> = <var>x</var><sup>2</sup></span>,
+    color: "var(--chart-1)",
+  },
+};
+```
+
+The same JSX works in `FunctionCurve.label`. No equation renderer or custom
+legend is required. Place `PlotSlider` in a standard `CardFooter`, or use a
+normal grid to position shared controls beside your charts.
 
 ## Compose with shadcn and Recharts
 
@@ -97,9 +125,9 @@ export function ControlledWave() {
         className="h-[360px] w-full"
       >
         <LineChart accessibilityLayer aria-label="Adjustable wave">
-          <CartesianGrid />
-          <XAxis dataKey="x" type="number" domain={[-6, 6]} allowDataOverflow />
-          <YAxis domain={[-3, 3]} allowDataOverflow />
+          <CartesianGrid vertical={false} />
+          <XAxis dataKey="x" type="number" domain={[-6, 6]} allowDataOverflow tickLine={false} axisLine={false} />
+          <YAxis domain={[-3, 3]} allowDataOverflow tickLine={false} axisLine={false} />
           <PlotFunction
             name="wave"
             fn={(x) => amplitude * Math.sin(x)}

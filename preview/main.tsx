@@ -1,4 +1,7 @@
+import { useState } from "react";
 import { createRoot } from "react-dom/client";
+import { InputGroup } from "@/components/ui/input-group";
+import { TypeScriptEditor } from "@/registry/code/ui/language-editors";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   blockDemos,
@@ -38,6 +41,10 @@ function CodePanel({
   file: PreviewFile;
   defaultOpen?: boolean;
 }) {
+  const [code, setCode] = useState(file.source);
+  const [cursor, setCursor] = useState({ line: 1, column: 1 });
+  const [expanded, setExpanded] = useState(false);
+
   return (
     <details open={defaultOpen} className="group rounded-lg border">
       <summary className="flex cursor-pointer items-center justify-between px-4 py-2.5 text-sm select-none hover:bg-muted/50">
@@ -49,9 +56,29 @@ function CodePanel({
           hide
         </span>
       </summary>
-      <pre className="max-h-96 overflow-auto border-t bg-zinc-950 p-4 text-xs leading-relaxed text-zinc-100">
-        <code>{file.source}</code>
-      </pre>
+      {expanded && (
+        <button
+          aria-label="Collapse editor"
+          className="fixed inset-0 z-40 cursor-default bg-background/80 backdrop-blur-sm"
+          onClick={() => setExpanded(false)}
+          type="button"
+        />
+      )}
+      <div className={expanded ? "fixed inset-4 z-50" : "border-t"}>
+        <InputGroup className={expanded ? "h-full bg-background" : "rounded-none border-0"}>
+          <TypeScriptEditor
+            busy={false}
+            code={code}
+            cursor={cursor}
+            expanded={expanded}
+            fileName={file.path}
+            onChange={setCode}
+            onCursorChange={setCursor}
+            onToggleExpanded={() => setExpanded((current) => !current)}
+            runtimeLabel="TypeScript"
+          />
+        </InputGroup>
+      </div>
     </details>
   );
 }

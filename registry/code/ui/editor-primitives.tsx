@@ -26,7 +26,7 @@ type CodeInputProps = {
     busy: boolean;
     onChange: (code: string) => void;
     onCursorChange: (cursor: { line: number; column: number }) => void;
-    onRun: () => void;
+    onRun?: () => void;
 };
 
 export function CodeInput({
@@ -44,7 +44,7 @@ export function CodeInput({
         <div
             className={cn("min-h-0", expanded && "flex-1")}
             onKeyDownCapture={(event) => {
-                if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
+                if (onRun && event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
                     event.preventDefault();
                     if (!busy) onRun();
                 }

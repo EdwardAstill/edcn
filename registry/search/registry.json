@@ -1,0 +1,63 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "items": [
+    {
+      "name": "use-nested-search",
+      "type": "registry:hook",
+      "title": "Use Nested Search",
+      "description": "Headless nested search state, three-pane Miller navigation, and accessible prop getters.",
+      "files": [
+        {
+          "path": "hooks/use-nested-search.ts",
+          "type": "registry:hook",
+          "target": "@hooks/search/use-nested-search.ts"
+        },
+        {
+          "path": "lib/search.ts",
+          "type": "registry:lib",
+          "target": "@lib/search/search.ts"
+        }
+      ]
+    },
+    {
+      "name": "search-primitives",
+      "type": "registry:ui",
+      "title": "Search Primitives",
+      "description": "Composable search input, results, and preview with custom row rendering.",
+      "dependencies": [
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "EdwardAstill/edcn/use-nested-search"
+      ],
+      "files": [
+        {
+          "path": "ui/search.tsx",
+          "type": "registry:ui",
+          "target": "@ui/search/search.tsx"
+        }
+      ]
+    },
+    {
+      "name": "nested-search",
+      "type": "registry:component",
+      "title": "Nested Search",
+      "description": "Hierarchy-preserving fuzzy search and Miller columns with a shared leaf preview.",
+      "dependencies": [
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "button",
+        "EdwardAstill/edcn/use-nested-search",
+        "EdwardAstill/edcn/search-primitives"
+      ],
+      "files": [
+        {
+          "path": "components/nested-search.tsx",
+          "type": "registry:component",
+          "target": "@components/search/nested-search.tsx"
+        }
+      ]
+    }
+  ]
+}

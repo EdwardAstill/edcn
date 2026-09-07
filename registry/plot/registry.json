@@ -33,7 +33,7 @@
           "target": "@ui/plot/plot.tsx"
         }
       ],
-      "dependencies": ["recharts@3.8.0"],
+      "dependencies": ["recharts@3.8.0", "cn"],
       "registryDependencies": ["chart", "slider"]
     },
     {
@@ -41,7 +41,7 @@
       "type": "registry:ui",
       "title": "Function Plot",
       "description": "Interactive function curves with generated shadcn sliders and Recharts rendering.",
-      "registryDependencies": ["EdwardAstill/edcn/plot"],
+      "registryDependencies": ["EdwardAstill/edcn/plot", "card"],
       "files": [
         {
           "path": "components/function-plot.tsx",

@@ -194,3 +194,74 @@ test("heatmap cells use Recharts coordinates, skip invalid values, and support c
   );
   expect(clicked).toEqual([[0, 0, 0]]);
 });
+
+test("function cards expose math legends, explicit ticks, and accessible axis context", async () => {
+  const { container, root } = await mount(
+    <FunctionPlot
+      title="Quadratic"
+      description="A parabola on fixed numeric axes"
+      xDomain={[-2, 2]}
+      yDomain={[0, 4]}
+      xTicks={[-2, 0, 2]}
+      yTicks={[0, 2, 4]}
+      xLabel="Input (x)"
+      yLabel="Output (y)"
+      curves={[
+        {
+          id: "quadratic",
+          label: (
+            <span>
+              <var>y</var> = <var>x</var>
+              <sup>2</sup>
+            </span>
+          ),
+          fn: (x) => x * x,
+          variant: "dashed",
+          line: { stroke: "rebeccapurple", strokeDasharray: "3 2" },
+        },
+      ]}
+    />,
+  );
+  const chart = container.querySelector('svg[role="application"]')!;
+  expect(
+    document.getElementById(chart.getAttribute("aria-labelledby")!)
+      ?.textContent,
+  ).toBe("Quadratic");
+  expect(
+    document.getElementById(chart.getAttribute("aria-describedby")!)
+      ?.textContent,
+  ).toBe("A parabola on fixed numeric axes");
+  expect(
+    [...chart.querySelectorAll(".recharts-label")].map(
+      (label) => label.textContent,
+    ),
+  ).toEqual(["Input (x)", "Output (y)"]);
+  expect(
+    [
+      ...chart.querySelectorAll(
+        ".recharts-xAxis-tick-labels .recharts-cartesian-axis-tick-value",
+      ),
+    ].map((tick) => tick.textContent),
+  ).toEqual(["-2", "0", "2"]);
+  const legend = container.querySelector(".recharts-legend-wrapper")!;
+  expect(legend.querySelector("sup")?.textContent).toBe("2");
+  expect(
+    chart
+      .querySelector(".recharts-line-curve")
+      ?.getAttribute("stroke-dasharray"),
+  ).toBe("3 2");
+  expect(chart.contains(legend)).toBe(false);
+  expect(container.querySelector('input[type="range"]')).toBeNull();
+
+  await act(async () =>
+    root.render(
+      <FunctionPlot
+        curves={[]}
+        xDomain={[0, 1]}
+        yDomain={[0, 1]}
+        showLegend={false}
+      />,
+    ),
+  );
+  expect(container.querySelector(".recharts-legend-wrapper")).toBeNull();
+});

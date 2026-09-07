@@ -4,7 +4,6 @@ import * as React from "react";
 import {
   CartesianGrid,
   ComposedChart,
-  Line,
   ReferenceLine,
   Scatter,
   XAxis,
@@ -18,92 +17,153 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import {
-  PlotFunction,
-  PlotControls,
-  PlotSlider,
-} from "@/registry/plot/ui/plot";
+  Card,
+  CardHeader,
+  CardContent,
+  CardFooter,
+  CardDescription,
+} from "@/components/ui/card";
+import { PlotFunction, PlotSlider } from "@/registry/plot/ui/plot";
 
 export const description =
-  "A sampled function alongside native Recharts lines and observations, with a shared parameter control.";
-const xDomain = [0, Math.PI * 2] as const;
-const reference = Array.from({ length: 32 }, (_, i) => {
-  const x = (i / 31) * Math.PI * 2;
-  return { x, y: Math.cos(x) };
-});
-const observations = Array.from({ length: 10 }, (_, i) => {
-  const x = (i / 9) * Math.PI * 2;
-  return { x, y: Math.sin(x) + 0.15 * Math.cos(x * 3) };
+  "Compose a fitted function, observations, and a shared control inside a chart card.";
+const xDomain = [0, 6] as const;
+const observations = Array.from({ length: 13 }, (_, i) => {
+  const x = i / 2;
+  return { x, y: 1.4 * Math.sin(x) + 0.12 * Math.cos(x * 3) };
 });
 const config = {
-  model: { label: "Model", color: "var(--chart-1)" },
-  reference: { label: "Reference", color: "var(--chart-2)" },
+  model: {
+    label: (
+      <span className="font-serif text-base">
+        <var>f</var>(<var>x</var>) = <var>A</var> sin(<var>x</var>)
+      </span>
+    ),
+    color: "var(--chart-1)",
+  },
   observations: { label: "Observations", color: "var(--chart-3)" },
 };
 
 export function PlotDemo() {
   const [amplitude, setAmplitude] = React.useState(1);
+  const rmse = Math.sqrt(
+    observations.reduce(
+      (sum, { x, y }) => sum + (y - amplitude * Math.sin(x)) ** 2,
+      0,
+    ) / observations.length,
+  );
   return (
-    <div className="grid w-full max-w-2xl gap-4">
-      <h3 className="font-semibold">Wave comparison</h3>
-      <p className="text-sm text-muted-foreground">
-        Adjust the model amplitude while the reference and observations stay
-        fixed.
-      </p>
-      <ChartContainer config={config} className="h-[360px] w-full">
-        <ComposedChart
-          accessibilityLayer
-          aria-label="Wave comparison"
-          margin={{ bottom: 20, left: 8, right: 24 }}
-        >
-          <CartesianGrid />
-          <XAxis
-            dataKey="x"
-            type="number"
-            domain={[...xDomain]}
-            allowDataOverflow
-            label={{ value: "Time (s)", position: "insideBottom", offset: -12 }}
-          />
-          <YAxis type="number" domain={[-3, 3]} allowDataOverflow />
-          <ReferenceLine y={0} />
-          <PlotFunction
-            name="model"
-            fn={(x) => amplitude * Math.sin(x)}
-            xDomain={xDomain}
-            stroke="var(--color-model)"
-          />
-          <Line
-            name="reference"
-            data={reference}
-            dataKey="y"
-            stroke="var(--color-reference)"
-            strokeDasharray="6 4"
-            type="monotone"
-            dot={false}
-            isAnimationActive={false}
-          />
-          <Scatter
-            name="observations"
-            data={observations}
-            dataKey="y"
-            fill="var(--color-observations)"
-            shape="diamond"
-            isAnimationActive={false}
-          />
-          <ChartTooltip content={<ChartTooltipContent />} />
-          <ChartLegend content={<ChartLegendContent nameKey="name" />} />
-        </ComposedChart>
-      </ChartContainer>
-      <PlotControls>
-        <PlotSlider
-          label="Amplitude"
-          value={amplitude}
-          onValueChange={setAmplitude}
-          min={0}
-          max={3}
-          step={0.1}
-          formatValue={(value) => value.toFixed(1)}
-        />
-      </PlotControls>
+    <div className="bg-muted/20 p-4 sm:p-6">
+      <Card className="[--card-spacing:--spacing(6)]">
+        <CardHeader className="gap-2">
+          <h3 className="text-base font-semibold tracking-tight">
+            Fit a sine wave
+          </h3>
+          <CardDescription>
+            Adjust the amplitude to bring the model closer to the observations.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ChartContainer
+            config={config}
+            className="aspect-auto h-[300px] w-full"
+          >
+            <ComposedChart
+              accessibilityLayer
+              aria-label="Sine model and observed values"
+              margin={{ top: 12, right: 16, bottom: 4, left: 0 }}
+            >
+              <CartesianGrid vertical={false} />
+              <XAxis
+                type="number"
+                scale="linear"
+                dataKey="x"
+                tickLine={false}
+                axisLine={false}
+                tick={{ fill: "var(--muted-foreground)" }}
+                allowDataOverflow
+                tickMargin={10}
+                minTickGap={24}
+                height={54}
+                label={{
+                  value: "x (rad)",
+                  position: "insideBottom",
+                  offset: 0,
+                  fill: "var(--muted-foreground)",
+                }}
+                domain={[...xDomain]}
+                tickCount={7}
+              />
+              <YAxis
+                type="number"
+                scale="linear"
+                tickLine={false}
+                axisLine={false}
+                tick={{ fill: "var(--muted-foreground)" }}
+                allowDataOverflow
+                tickMargin={8}
+                width={64}
+                label={{
+                  value: "Response",
+                  position: "insideLeft",
+                  angle: -90,
+                  offset: 4,
+                  style: { textAnchor: "middle" },
+                  fill: "var(--muted-foreground)",
+                }}
+                domain={[-2, 2]}
+                tickCount={5}
+              />
+              <ReferenceLine y={0} stroke="var(--border)" />
+              <PlotFunction
+                name="model"
+                fn={(x) => amplitude * Math.sin(x)}
+                xDomain={xDomain}
+                stroke="var(--color-model)"
+              />
+              <Scatter
+                name="observations"
+                data={observations}
+                dataKey="y"
+                fill="var(--color-observations)"
+                isAnimationActive={false}
+              />
+              <ChartTooltip
+                content={<ChartTooltipContent nameKey="name" hideLabel />}
+              />
+              <ChartLegend
+                content={
+                  <ChartLegendContent
+                    nameKey="name"
+                    className="flex-wrap gap-x-5 gap-y-2 pt-4"
+                  />
+                }
+              />
+            </ComposedChart>
+          </ChartContainer>
+        </CardContent>
+        <CardFooter className="grid gap-6 sm:grid-cols-[1fr_auto]">
+          <div className="grid w-full gap-5">
+            <PlotSlider
+              label="Amplitude · A"
+              value={amplitude}
+              onValueChange={setAmplitude}
+              min={0}
+              max={2}
+              step={0.05}
+              formatValue={(n) => n.toFixed(2)}
+            />
+          </div>
+          <div className="grid gap-1 sm:border-l sm:pl-6">
+            <span className="text-xs text-muted-foreground">
+              Root mean square error
+            </span>
+            <output className="font-mono text-lg tabular-nums">
+              {rmse.toFixed(3)}
+            </output>
+          </div>
+        </CardFooter>
+      </Card>
     </div>
   );
 }

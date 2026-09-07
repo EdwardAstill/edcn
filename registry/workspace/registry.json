@@ -154,6 +154,7 @@
       "title": "Workspace Tab List",
       "description": "Tab strip for a workspace stack; draggable tabs, activates and closes views.",
       "registryDependencies": [
+        "tabs",
         "EdwardAstill/edcn/use-workspace",
         "EdwardAstill/edcn/use-workspace-drag"
       ],
@@ -171,6 +172,7 @@
       "title": "Workspace Stack",
       "description": "Renders one stack: tab strip plus the active view; drop target for docking.",
       "registryDependencies": [
+        "tabs",
         "EdwardAstill/edcn/workspace-tab-list",
         "EdwardAstill/edcn/use-workspace",
         "EdwardAstill/edcn/use-workspace-drag",

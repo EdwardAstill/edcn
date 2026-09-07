@@ -206,3 +206,20 @@ double-click sorting, draggable column widths, Ctrl-drag resizing of all columns
 and optional pagination. Install it with
 `bunx shadcn@latest add EdwardAstill/edcn/data-table`. The runnable example lives
 in `examples/table/` and appears under the Table preview tab.
+
+## Tree
+
+The [tree kit](registry/tree/README.md) provides selection and keyboard navigation,
+with optional mouse, touch, and held-Space sorting through `sortable` (off by
+default). Install with `bunx shadcn@latest add EdwardAstill/edcn/tree`.
+The browsing and editable examples live in `examples/tree/` and appear under
+the Tree preview tab.
+
+## Nested search
+
+The [search kit](registry/search/README.md) combines hierarchy-preserving fuzzy
+search, Miller columns, and a shared content preview for nested files or records.
+Install with `bunx shadcn@latest add EdwardAstill/edcn/nested-search`.
+Use `use-nested-search` for headless navigation or `search-primitives` to compose
+your own interface. The file, record, and custom course-browser examples live in
+`examples/search/` and appear under the Search preview tab.

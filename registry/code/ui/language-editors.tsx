@@ -9,13 +9,14 @@ import {
     EnlargeButton,
     type EditorResult,
     RunButton,
-} from "./editor-primitives";
+} from "@/registry/code/ui/editor-primitives";
 import { InputGroupAddon, InputGroupText } from "@/components/ui/input-group";
 import type { Language } from "@/registry/code/hooks/use-code-runtime";
 
 const pythonExtensions = [python()];
 const javaScriptExtensions = [javascript()];
 const typeScriptExtensions = [javascript({ typescript: true })];
+const plainTextExtensions: ReturnType<typeof python>[] = [];
 
 export type LanguageEditorProps = {
     busy: boolean;
@@ -27,7 +28,7 @@ export type LanguageEditorProps = {
     runtimeLabel: string;
     onChange: (code: string) => void;
     onCursorChange: (cursor: { line: number; column: number }) => void;
-    onRun: () => void;
+    onRun?: () => void;
     onToggleExpanded: () => void;
 };
 
@@ -84,7 +85,9 @@ function LanguageEditor({
                         expanded={expanded}
                         onToggle={onToggleExpanded}
                     />
-                    <RunButton busy={busy} fileName={fileName} onRun={onRun} />
+                    {onRun ? (
+                        <RunButton busy={busy} fileName={fileName} onRun={onRun} />
+                    ) : null}
                 </div>
             </InputGroupAddon>
         </>
@@ -124,6 +127,24 @@ export function TypeScriptEditor(props: LanguageEditorProps) {
             placeholder={
                 '// Start writing TypeScript…\nconsole.log("Hello, world!")'
             }
+        />
+    );
+}
+
+export type PlainTextEditorProps = Omit<
+    LanguageEditorProps,
+    "busy" | "result" | "runtimeLabel" | "onRun"
+>;
+
+export function PlainTextEditor(props: PlainTextEditorProps) {
+    return (
+        <LanguageEditor
+            {...props}
+            busy={false}
+            extensions={plainTextExtensions}
+            language="Plain text"
+            placeholder="Start writing…"
+            runtimeLabel="Plain text"
         />
     );
 }

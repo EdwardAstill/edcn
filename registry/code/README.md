@@ -1,6 +1,6 @@
 # Code
 
-A runnable code playground for React: CodeMirror editors for Python,
+Code-focused editors for React: plain text plus runnable CodeMirror editors for Python,
 JavaScript, and TypeScript backed by Web Worker runtimes. Python runs on
 Pyodide; JavaScript and TypeScript run in a sandboxed worker (TypeScript is
 transpiled in-browser). This feature was incorporated from the standalone
@@ -68,10 +68,19 @@ worker so the next run starts fresh.
 
 The `code-editor` item ships `editor-primitives.tsx` (editor, output panel,
 copy/enlarge/run buttons) and `language-editors.tsx` (`PythonEditor`,
-`JavaScriptEditor`, `TypeScriptEditor`, plus a `languageEditors` record keyed
-by language). Editors need no props of their own beyond state you supply; see
-`examples/code/code-demo.tsx` for the full wiring: file tabs, rename, per-file
-results, cursor position, and an enlarged overlay mode.
+`JavaScriptEditor`, `TypeScriptEditor`, `PlainTextEditor`, plus a
+`languageEditors` record keyed by runnable language).
+
+Editors contain code, optional output, and a bottom toolbar. File tabs and file
+management belong to the surrounding application. Supply editor state and wrap
+an editor in `InputGroup`; see `examples/code/code-demo.tsx` for a single Python
+editor with run results, cursor position, and an enlarged overlay.
+
+`PlainTextEditor` accepts `code`, `onChange`, `cursor`, `onCursorChange`,
+`expanded`, `onToggleExpanded`, and `fileName` (used in accessible control labels).
+It edits arbitrary text without syntax highlighting or a runtime, and keeps
+Copy and Enlarge in the bottom toolbar. See `examples/code/plain-text-demo.tsx`.
+Runnable editors show Run and enable Ctrl/Cmd+Enter only when `onRun` is supplied.
 
 ## Runtime notes
 

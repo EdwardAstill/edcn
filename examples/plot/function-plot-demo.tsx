@@ -1,42 +1,76 @@
 import { FunctionPlot } from "@/registry/plot/components/function-plot";
 
 export const description =
-  "Parameterized wave and envelope curves with generated sliders.";
+  "A wave explorer with a formula key and integrated parameter sliders.";
 
 export function FunctionPlotDemo() {
   return (
-    <FunctionPlot
-      width={640}
-      height={360}
-      xDomain={[-Math.PI * 2, Math.PI * 2]}
-      yDomain={[-3, 3]}
-      xLabel="x"
-      yLabel="y"
-      title="Parameterized functions"
-      curves={[
-        {
-          id: "wave",
-          label: "Wave",
-          fn: (x, p) => p.amplitude! * Math.sin(p.frequency! * x + p.phase!),
-          parameters: {
-            amplitude: { value: 1, min: 0, max: 3, step: 0.1 },
-            frequency: { value: 1, min: 0.1, max: 5, step: 0.1 },
-            phase: { value: 0, min: -Math.PI, max: Math.PI, step: 0.1 },
+    <div className="bg-muted/20 p-4 sm:p-6">
+      <FunctionPlot
+        height={300}
+        xDomain={[-Math.PI * 2, Math.PI * 2]}
+        yDomain={[-3, 3]}
+        xLabel="Phase (rad)"
+        yLabel="Amplitude"
+        xTicks={[-2 * Math.PI, -Math.PI, 0, Math.PI, 2 * Math.PI]}
+        yTicks={[-3, -1.5, 0, 1.5, 3]}
+        xTickFormat={(x) =>
+          Math.abs(x) < 0.001
+            ? "0"
+            : `${x < 0 ? "−" : ""}${Math.abs(x / Math.PI) === 1 ? "" : Number(Math.abs(x / Math.PI).toFixed(2))}π`
+        }
+        title="Harmonic motion"
+        description="Explore how amplitude, frequency, and phase shape a sine wave."
+        curves={[
+          {
+            id: "wave",
+            label: (
+              <span className="font-serif text-base">
+                <var>f</var>(<var>x</var>) = <var>A</var> sin(<var>ωx</var> +{" "}
+                <var>φ</var>)
+              </span>
+            ),
+            fn: (x, p) => p.amplitude! * Math.sin(p.frequency! * x + p.phase!),
+            parameters: {
+              amplitude: {
+                label: "Amplitude · A",
+                value: 1.5,
+                min: 0,
+                max: 3,
+                step: 0.1,
+                formatValue: (n) => n.toFixed(1),
+              },
+              frequency: {
+                label: "Frequency · ω",
+                value: 1,
+                min: 0.5,
+                max: 3,
+                step: 0.1,
+                formatValue: (n) => n.toFixed(1),
+              },
+              phase: {
+                label: "Phase · φ",
+                value: 0,
+                min: -Math.PI,
+                max: Math.PI,
+                step: Math.PI / 20,
+                formatValue: (n) => `${Number((n / Math.PI).toFixed(2))}π`,
+              },
+            },
           },
-          line: { stroke: "var(--chart-1)" },
-        },
-        {
-          id: "envelope",
-          label: "Envelope",
-          fn: (x, p) => p.scale! * Math.exp(-p.decay! * x * x),
-          parameters: {
-            scale: { value: 2, min: 0, max: 4, step: 0.1 },
-            decay: { value: 0.2, min: 0.01, max: 1, step: 0.01 },
+          {
+            id: "reference",
+            label: (
+              <span className="font-serif text-base">
+                <var>g</var>(<var>x</var>) = sin(<var>x</var>)
+              </span>
+            ),
+            fn: (x) => Math.sin(x),
+            variant: "dashed",
+            line: { stroke: "var(--chart-2)", strokeWidth: 1.5 },
           },
-          variant: "dashed",
-          line: { stroke: "var(--chart-2)" },
-        },
-      ]}
-    />
+        ]}
+      />
+    </div>
   );
 }

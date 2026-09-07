@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { cn } from "cn";
 import { Slider } from "@/components/ui/slider";
 
 export function PlotControls({
@@ -10,13 +11,14 @@ export function PlotControls({
   return (
     <div
       {...props}
-      className={`grid gap-4 rounded-lg border p-4 ${className ?? ""}`.trim()}
+      data-slot="plot-controls"
+      className={cn("grid w-full min-w-0 gap-5", className)}
     />
   );
 }
 
 export interface PlotSliderProps {
-  label: string;
+  label: React.ReactNode;
   value: number;
   onValueChange: (value: number) => void;
   min: number;
@@ -45,19 +47,21 @@ export function PlotSlider({
   const labelId = `${inputId}-label`;
   const outputId = `${inputId}-value`;
   return (
-    <div className={`grid gap-2 ${className ?? ""}`.trim()}>
+    <div className={cn("grid min-w-0 gap-3", className)}>
       <div className="flex items-baseline justify-between gap-4">
         <label id={labelId} htmlFor={inputId} className="text-sm">
           {label}
         </label>
         <output
           id={outputId}
-          className="font-mono text-sm tabular-nums text-muted-foreground"
+          htmlFor={inputId}
+          className="rounded-md bg-muted px-2 py-0.5 font-mono text-xs tabular-nums text-foreground"
         >
           {formatValue(value)}
         </output>
       </div>
       <Slider
+        thumbAlignment="center"
         id={inputId}
         aria-labelledby={labelId}
         aria-describedby={outputId}

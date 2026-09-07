@@ -1,0 +1,25 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "items": [
+    {
+      "name": "tree",
+      "type": "registry:component",
+      "title": "Tree",
+      "description": "Collapsible file tree with keyboard navigation and optional pointer and held-Space sorting.",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["button", "collapsible"],
+      "files": [
+        {
+          "path": "components/tree.tsx",
+          "type": "registry:component",
+          "target": "@components/tree/tree.tsx"
+        },
+        {
+          "path": "lib/tree.ts",
+          "type": "registry:lib",
+          "target": "@lib/tree/tree.ts"
+        }
+      ]
+    }
+  ]
+}

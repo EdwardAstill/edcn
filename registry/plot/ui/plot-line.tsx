@@ -37,6 +37,7 @@ export function PlotFunction({
       dot={false}
       isAnimationActive={false}
       stroke="var(--chart-1)"
+      strokeWidth={2}
       {...props}
       data={data}
       dataKey="y"
