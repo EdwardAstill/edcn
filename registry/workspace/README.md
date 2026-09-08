@@ -173,6 +173,10 @@ surfaces host a single unsplittable stack.
 
 ## Floating windows
 
+Double-click a docked tab to float it, or a floating/popout tab to dock it
+back into the tiled layout. Only the clicked tab moves; pinned tabs stay on
+their current surface.
+
 Geometry lives in state, so windows persist and serialize. Chrome (title bar)
 is optional via `config.floating.chrome`: `"frame"` adds a draggable title
 bar; `"frameless"` moves with the configured `dragModifier` (e.g. hold ctrl

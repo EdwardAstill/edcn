@@ -13,6 +13,7 @@ import {
   useWorkspaceState,
 } from "@/registry/workspace/hooks/use-workspace";
 import { useWorkspaceDrag } from "@/registry/workspace/hooks/use-workspace-drag";
+import { isSurfaceStack } from "@/registry/workspace/lib/model/surface";
 
 export interface WorkspaceTabListProps
   extends React.HTMLAttributes<HTMLDivElement> {
@@ -64,6 +65,10 @@ export function WorkspaceTabList({
               >
                 <TabsTrigger
                   value={viewId}
+                  onDoubleClick={() => dispatch({
+                    type: isSurfaceStack(state, stackId) ? "view/dock" : "view/float",
+                    viewId,
+                  })}
                   className={cn("h-full max-w-48 px-2.5", view.closable !== false && "pr-7")}
                 >
                   <span className="truncate">{view.title}</span>
