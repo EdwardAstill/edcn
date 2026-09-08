@@ -1,7 +1,7 @@
 # edcn
 
 A single shadcn registry for independent components and feature kits. Workspace,
-quiz, plot, code, and calculator share a catalog and preview site, but keep their own source,
+quiz, plot, and code share a catalog and preview site, but keep their own source,
 state, and registry dependencies.
 
 ## Organization
@@ -16,7 +16,6 @@ examples/
   quiz/                          # quiz examples
   plot/                          # plot examples
   code/                          # code playground examples
-  calculator/                    # scientific calculator example
 registry/
   workspace/
     registry.json                # workspace items and dependency graph
@@ -39,8 +38,7 @@ registry/
     ui/                          # CodeMirror editor and output primitives
 ```
 
-The `registry/calculator/` area contains the scientific calculator UI, parser,
-and Pyodide/SymPy solver. See the [calculator guide](registry/calculator/README.md).
+The scientific calculator is maintained separately in the standalone `calcn` project.
 
 Registry manifests describe installable source only. Demos and usage examples
 live in `examples/`, one folder per area, and the preview site is generated
@@ -60,7 +58,6 @@ bunx shadcn@latest add EdwardAstill/edcn/quiz
 bunx shadcn@latest add EdwardAstill/edcn/workspace
 bunx shadcn@latest add EdwardAstill/edcn/plot
 bunx shadcn@latest add EdwardAstill/edcn/code-editor
-bunx shadcn@latest add EdwardAstill/edcn/calculator
 ```
 
 These are separate installs. Quiz does not pull in workspace or tabs. See the
@@ -98,7 +95,8 @@ Open [http://localhost:3000](http://localhost:3000) to preview the registry. The
 `bun run dev` takes over port 3000 (or `PORT` when set), stopping existing TCP
 listeners before starting. It uses `lsof` and force-stops listeners that do not
 exit within two seconds. If a preview process exits, the other preview processes
-are stopped too.
+are stopped too. Ctrl+C waits for the server and watchers to exit cleanly,
+force-stopping a child only if it has not exited after two seconds.
 
 ## Build the registry
 
@@ -168,7 +166,7 @@ Save/Load persistence.
 
 `examples/` holds every demo shown on the preview site, in one folder per
 area (`examples/workspace/`, `examples/quiz/`, `examples/plot/`,
-`examples/code/`, `examples/calculator/`). The registry does not ship demos; examples import registry
+`examples/code/`). The registry does not ship demos; examples import registry
 source through the `@/registry/<area>/...` alias and are never installed by
 the shadcn CLI. Drop a new `.tsx` file into an area folder and it appears on
 the site automatically.
@@ -180,7 +178,7 @@ Each example exports a no-props React component named after its file
 ## Preview site
 
 The preview at [http://localhost:3000](http://localhost:3000) groups examples
-under **Workspace**, **Quiz**, **Plot**, **Code**, and **Calculator** tabs — one tab per
+under area tabs such as **Workspace**, **Quiz**, **Plot**, and **Code** — one tab per
 folder in `examples/`. Adding, renaming, or editing files there updates the
 site without any manual registration.
 
@@ -221,5 +219,5 @@ The [search kit](registry/search/README.md) combines hierarchy-preserving fuzzy
 search, Miller columns, and a shared content preview for nested files or records.
 Install with `bunx shadcn@latest add EdwardAstill/edcn/nested-search`.
 Use `use-nested-search` for headless navigation or `search-primitives` to compose
-your own interface. The file, record, and custom course-browser examples live in
+your own interface. The nested file and Miller-column record examples live in
 `examples/search/` and appear under the Search preview tab.

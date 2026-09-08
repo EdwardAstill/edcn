@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { indexItems, millerColumns, projectSearch, type SearchEntry, type SearchItem } from "@/registry/search/lib/search";
+import { fuzzyMatch, indexItems, millerColumns, projectSearch, type SearchEntry, type SearchItem } from "@/registry/search/lib/search";
 
 export type SearchMode = "files" | "miller";
 export interface UseNestedSearchOptions<T = unknown> {
@@ -24,16 +24,29 @@ export function useNestedSearch<T>({ items, defaultMode = "files", defaultSelect
     ...defaultExpandedIds,
     ...(byId.get(defaultSelectedId ?? "")?.ancestors.map((item) => item.id) ?? []),
   ]));
-  const projection = React.useMemo(() => projectSearch(entries, query, expanded), [entries, query, expanded]);
-  const candidates = mode === "files" ? projection.visible : entries.filter((entry) => projection.included.has(entry.item.id));
+  // Keep the current level anchored even when its query has no matches.
+  const anchor = byId.get(selectedId ?? "") ?? entries[0];
+  const currentItems = anchor?.ancestors.at(-1)?.children ?? items;
+  const projection = React.useMemo(() => {
+    if (mode === "files") return projectSearch(entries, query, expanded);
+    const currentIds = new Set(currentItems.map((item) => item.id));
+    const matches = new Set(currentItems.filter((item) => fuzzyMatch(item.label, query.trim())).map((item) => item.id));
+    return {
+      visible: entries.filter((entry) => currentIds.has(entry.item.id) && matches.has(entry.item.id)),
+      included: new Set(entries.filter((entry) => !currentIds.has(entry.item.id) || matches.has(entry.item.id)).map((entry) => entry.item.id)),
+      matches: query.trim() ? matches : new Set<string>(),
+    };
+  }, [entries, query, expanded, mode, currentItems]);
+  const candidates = projection.visible;
   const selected = candidates.find((entry) => entry.item.id === selectedId)
-    ?? candidates.find((entry) => projection.matches.has(entry.item.id)) ?? candidates[0];
+    ?? candidates.find((entry) => projection.matches.has(entry.item.id)) ?? candidates[0]
+    ?? (mode === "miller" ? anchor : undefined);
   const columns = millerColumns(items, selected, projection.included);
   const activeColumn = 1;
   const navigation = mode === "files" ? projection.visible : (columns[activeColumn]?.items ?? []).map((item) => byId.get(item.id)!);
   const prefix = React.useId();
   const input = React.useRef<HTMLInputElement>(null);
-  const rows = React.useRef(new Map<string, HTMLDivElement>());
+  const rows = React.useRef(new Map<string, HTMLElement>());
   const pendingFocus = React.useRef<string | null>(null);
   const rowId = (id: string) => `${prefix}-item-${encodeURIComponent(id)}`;
   const resultsId = mode === "files" ? `${prefix}-tree` : `${prefix}-column-${activeColumn}`;
@@ -48,7 +61,7 @@ export function useNestedSearch<T>({ items, defaultMode = "files", defaultSelect
 
   React.useEffect(() => {
     const row = selected ? rows.current.get(selected.item.id) : undefined;
-    const list = row?.parentElement;
+    const list = row?.closest<HTMLElement>('[role="tree"], [role="listbox"]');
     if (row && list) {
       const bounds = row.getBoundingClientRect();
       const viewport = list.getBoundingClientRect();
@@ -58,9 +71,13 @@ export function useNestedSearch<T>({ items, defaultMode = "files", defaultSelect
   }, [selected?.item.id, mode, columns.length]);
 
   function choose(entry: SearchEntry<T>, focus = false) {
+    if (mode === "miller" && entry.ancestors.at(-1)?.id !== anchor?.ancestors.at(-1)?.id) setQuery("");
     setSelectedId(entry.item.id);
     onSelect?.(entry.item);
-    if (focus) pendingFocus.current = entry.item.id;
+    if (focus) {
+      if (selected?.item.id === entry.item.id) rows.current.get(entry.item.id)?.focus();
+      else pendingFocus.current = entry.item.id;
+    }
   }
   function toggle(id: string, open: boolean) {
     if (searching) return;
@@ -73,7 +90,9 @@ export function useNestedSearch<T>({ items, defaultMode = "files", defaultSelect
   function changeQuery(value: string) {
     setQuery(value);
     const next = projectSearch(entries, value, expanded);
-    const first = next.visible.find((entry) => next.matches.has(entry.item.id));
+    const first = mode === "miller"
+      ? currentItems.filter((item) => fuzzyMatch(item.label, value.trim())).map((item) => byId.get(item.id)!)[0]
+      : next.visible.find((entry) => next.matches.has(entry.item.id));
     if (first) choose(first);
   }
   function changeMode(next: SearchMode) {
@@ -85,13 +104,35 @@ export function useNestedSearch<T>({ items, defaultMode = "files", defaultSelect
   }
   function keyDown(event: React.KeyboardEvent, fromInput = false, entry = selected) {
     if (event.nativeEvent.isComposing || event.altKey || event.metaKey) return;
+    if (!fromInput && !event.ctrlKey && event.key.length === 1) {
+      event.preventDefault();
+      changeQuery(query + event.key);
+      input.current?.focus();
+      return;
+    }
+    if (event.key === "Tab" && !event.ctrlKey) {
+      // Shift+Tab from search leaves the widget; Escape returns to search.
+      if (fromInput && event.shiftKey) return;
+      const options = mode === "files" && searching
+        ? navigation.filter((node) => projection.matches.has(node.item.id)) : navigation;
+      if (!options.length) return;
+      event.preventDefault();
+      const index = navigation.findIndex((node) => node.item.id === entry?.item.id);
+      const target = fromInput && options.some((node) => node.item.id === entry?.item.id)
+        ? entry!
+        : event.shiftKey
+          ? options.findLast((node) => navigation.indexOf(node) < index) ?? options.at(-1)!
+          : options.find((node) => navigation.indexOf(node) > index) ?? options[0];
+      choose(target, true);
+      return;
+    }
     // Keep normal text editing available; horizontal navigation belongs to the rows.
     if (fromInput && ["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
     const keys = ["ArrowDown", "ArrowUp", "ArrowLeft", "ArrowRight", "Home", "End", "Enter", "Escape"];
     if (!keys.includes(event.key)) return;
     event.preventDefault();
     if (event.key === "Escape") { changeQuery(""); input.current?.focus(); return; }
-    if (!entry) return;
+    if (!entry || (fromInput && !navigation.length)) return;
     const list = event.ctrlKey && searching ? navigation.filter((node) => projection.matches.has(node.item.id)) : navigation;
     const index = list.findIndex((node) => node.item.id === entry.item.id);
     let target: SearchEntry<T> | undefined;
@@ -100,12 +141,12 @@ export function useNestedSearch<T>({ items, defaultMode = "files", defaultSelect
     if (event.key === "Home") target = list[0];
     if (event.key === "End") target = list.at(-1);
     if (event.key === "ArrowLeft") {
-      if (mode === "files" && expanded.has(entry.item.id) && !searching) toggle(entry.item.id, false);
+      if (mode === "files") toggle(entry.item.id, false);
       else target = byId.get(entry.ancestors.at(-1)?.id ?? "");
     }
     if (event.key === "ArrowRight" || event.key === "Enter") {
       if (entry.item.children) {
-        if (mode === "files" && !expanded.has(entry.item.id) && !searching) toggle(entry.item.id, true);
+        if (mode === "files") toggle(entry.item.id, event.key === "Enter" ? !expanded.has(entry.item.id) : true);
         else target = entry.item.children.map((item) => byId.get(item.id)!).find((node) => projection.included.has(node.item.id));
       } else if (event.key === "Enter") onOpen?.(entry.item);
     }
@@ -114,10 +155,10 @@ export function useNestedSearch<T>({ items, defaultMode = "files", defaultSelect
 
   function getInputProps(): React.ComponentPropsWithRef<"input"> {
     return {
-      ref: input, role: "combobox", "aria-label": "Search all items",
+      ref: input, role: "combobox", "aria-label": mode === "miller" ? "Search current column" : "Search all items",
       "aria-autocomplete": "list", "aria-haspopup": mode === "files" ? "tree" : "listbox",
       "aria-expanded": true, "aria-controls": resultsId,
-      "aria-activedescendant": selected ? rowId(selected.item.id) : undefined,
+      "aria-activedescendant": selected && navigation.some((entry) => entry.item.id === selected.item.id) ? rowId(selected.item.id) : undefined,
       value: query, onChange: (event) => changeQuery(event.target.value),
       onKeyDown: (event) => keyDown(event, true),
     };
@@ -140,7 +181,7 @@ export function useNestedSearch<T>({ items, defaultMode = "files", defaultSelect
     };
   }
 
-  function getItemProps(entry: SearchEntry<T>): React.ComponentPropsWithRef<"div"> {
+  function getItemProps<E extends HTMLElement = HTMLDivElement>(entry: SearchEntry<T>): React.HTMLAttributes<E> & React.RefAttributes<E> {
     const { item } = entry;
     const { isContainer, isSelected, isExpanded } = getItemState(entry);
     const tree = mode === "files";

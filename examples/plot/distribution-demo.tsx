@@ -14,13 +14,6 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import {
-  Card,
-  CardHeader,
-  CardContent,
-  CardFooter,
-  CardDescription,
-} from "@/components/ui/card";
 import { binCounts, PlotHeatmap, PlotSlider } from "@/registry/plot/ui/plot";
 
 export const description =
@@ -47,17 +40,17 @@ export function DistributionDemo() {
     }),
   );
   return (
-    <div className="grid gap-5 bg-muted/20 p-4 sm:p-6">
-      <Card className="[--card-spacing:--spacing(6)]">
-        <CardHeader className="gap-1.5">
+    <div className="grid gap-5 ">
+      <section className="flex flex-col gap-6">
+        <header className="grid gap-1.5">
           <h3 className="text-base font-semibold tracking-tight">
             Rainfall distribution
           </h3>
-          <CardDescription>
+          <p className="text-sm text-muted-foreground">
             24 observations · adjust the bin count to explore the distribution.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+          </p>
+        </header>
+        <div className="min-w-0">
           <ChartContainer
             config={{
               count: { label: "Observations", color: "var(--chart-1)" },
@@ -118,8 +111,8 @@ export function DistributionDemo() {
               <ChartTooltip content={<ChartTooltipContent />} />
             </BarChart>
           </ChartContainer>
-        </CardContent>
-        <CardFooter>
+        </div>
+        <footer className="grid gap-4">
           <div className="grid w-full gap-5">
             <PlotSlider
               label="Number of bins"
@@ -130,24 +123,24 @@ export function DistributionDemo() {
               step={4}
             />
           </div>
-        </CardFooter>
-      </Card>
-      <Card className="[--card-spacing:--spacing(6)]">
-        <CardHeader className="gap-1.5">
+        </footer>
+      </section>
+      <section className="flex flex-col gap-6">
+        <header className="grid gap-1.5">
           <h3 className="text-base font-semibold tracking-tight">
             Gaussian field
           </h3>
-          <CardDescription>
+          <p className="text-sm text-muted-foreground">
             A radial field with adjustable spread and a fixed intensity scale.
-          </CardDescription>
+          </p>
           <span className="pt-2 font-serif text-base">
             <var>f</var>(<var>x</var>, <var>y</var>) = e
             <sup>
               −(<var>x</var>² + <var>y</var>²) / (2<var>σ</var>²)
             </sup>
           </span>
-        </CardHeader>
-        <CardContent className="mx-auto w-full max-w-md">
+        </header>
+        <div className="min-w-0 mx-auto w-full max-w-md">
           <ChartContainer config={{}} className="aspect-square w-full">
             <ComposedChart
               accessibilityLayer
@@ -219,8 +212,8 @@ export function DistributionDemo() {
               <span>1</span>
             </div>
           </div>
-        </CardContent>
-        <CardFooter>
+        </div>
+        <footer className="grid gap-4">
           <div className="grid w-full gap-5">
             <PlotSlider
               label="Spread · σ"
@@ -232,8 +225,8 @@ export function DistributionDemo() {
               formatValue={(n) => n.toFixed(1)}
             />
           </div>
-        </CardFooter>
-      </Card>
+        </footer>
+      </section>
     </div>
   );
 }

@@ -7,7 +7,6 @@
     "registry/quiz/registry.json",
     "registry/plot/registry.json",
     "registry/code/registry.json",
-    "registry/calculator/registry.json",
     "registry/table/registry.json",
     "registry/tree/registry.json",
     "registry/search/registry.json"

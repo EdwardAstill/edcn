@@ -5,8 +5,9 @@ export const description =
 
 export function FunctionPlotDemo() {
   return (
-    <div className="bg-muted/20 p-4 sm:p-6">
+    <div>
       <FunctionPlot
+        className="rounded-none ring-0 shadow-none"
         height={300}
         xDomain={[-Math.PI * 2, Math.PI * 2]}
         yDomain={[-3, 3]}

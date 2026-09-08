@@ -28,7 +28,8 @@
         "lucide-react"
       ],
       "registryDependencies": [
-        "EdwardAstill/edcn/use-nested-search"
+        "EdwardAstill/edcn/use-nested-search",
+        "EdwardAstill/edcn/tree"
       ],
       "files": [
         {

@@ -27,7 +27,7 @@ function Demo({
           <p className="text-muted-foreground text-sm">{description}</p>
         )}
       </div>
-      <div className="relative min-h-[420px] overflow-hidden rounded-lg border">
+      <div className="relative min-h-[420px] overflow-hidden">
         {children}
       </div>
     </div>
@@ -46,7 +46,7 @@ function CodePanel({
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <details open={defaultOpen} className="group rounded-lg border">
+    <details open={defaultOpen} className="group">
       <summary className="flex cursor-pointer items-center justify-between px-4 py-2.5 text-sm select-none hover:bg-muted/50">
         <code className="text-muted-foreground">{file.path}</code>
         <span className="text-muted-foreground/60 text-xs group-open:hidden">
@@ -107,7 +107,7 @@ function App() {
   const areas = [...new Set(blockDemos.map((demo) => demo.area))];
 
   return (
-    <div className="mx-auto flex min-h-svh max-w-3xl flex-col gap-10 px-4 py-8 antialiased">
+    <div className="mx-auto flex min-h-svh max-w-6xl flex-col gap-10 px-4 py-8 antialiased">
       <header className="flex flex-col gap-1">
         <h1 className="text-3xl font-bold tracking-tight">edcn registry</h1>
         <p className="text-muted-foreground">

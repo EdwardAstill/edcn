@@ -13,8 +13,7 @@
     "typecheck": "bun run preview:gen && tsc --noEmit",
     "test": "bun test ./tests",
     "registry:validate": "shadcn registry validate ./registry.json",
-    "check": "bun run registry:validate && bun run typecheck && bun run lint && bun run test",
-    "calculator:gen": "bun scripts/render-calculator-help.ts && bun scripts/render-calculator-solver-source.ts && bun scripts/render-calculator-solver-worker.ts"
+    "check": "bun run registry:validate && bun run typecheck && bun run lint && bun run test"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",

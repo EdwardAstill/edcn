@@ -6,15 +6,9 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import {
-  Card,
-  CardHeader,
-  CardContent,
-  CardDescription,
-} from "@/components/ui/card";
 
 export const description =
-  "Four compact cards comparing interpolation on the same sampled signal.";
+  "Four plots comparing interpolation on the same sampled signal.";
 const data = [0, 1.5, 0.5, 2, 1].map((y, x) => ({ x, y }));
 const styles = [
   {
@@ -45,16 +39,16 @@ const styles = [
 
 export function LineTypesDemo() {
   return (
-    <div className="grid w-full gap-4 bg-muted/20 p-4 sm:grid-cols-2 sm:p-6">
+    <div className="grid w-full gap-4 sm:grid-cols-2">
       {styles.map(({ type, dash, label, note }, index) => (
-        <Card key={type}>
-          <CardHeader className="gap-1.5">
+        <section key={type} className="flex flex-col gap-6">
+          <header className="grid gap-1.5">
             <h3 className="text-sm font-semibold">{label}</h3>
-            <CardDescription className="min-h-10 text-xs leading-relaxed">
+            <p className="text-muted-foreground min-h-10 text-xs leading-relaxed">
               {note}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="px-2">
+            </p>
+          </header>
+          <div className="min-w-0 px-2">
             <ChartContainer
               config={{
                 y: {
@@ -125,8 +119,8 @@ export function LineTypesDemo() {
                 <ChartLegend content={<ChartLegendContent />} />
               </LineChart>
             </ChartContainer>
-          </CardContent>
-        </Card>
+          </div>
+        </section>
       ))}
     </div>
   );

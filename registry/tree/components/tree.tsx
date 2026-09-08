@@ -8,19 +8,33 @@ import { cn } from "@/lib/utils";
 import { childrenOf, dropNode, flattenTree, reorderNode, reparentNode, wouldCreateCycle, type DropPosition, type TreeNode } from "@/registry/tree/lib/tree";
 
 export type TreeItem = TreeNode;
+export type TreeItemProps = React.ComponentPropsWithRef<"button"> & { [key: `data-${string}`]: string | undefined };
 export interface TreeProps extends Omit<React.ComponentPropsWithoutRef<"div">, "children" | "onChange"> {
   items?: TreeItem[];
   defaultItems?: TreeItem[];
   onItemsChange?: (items: TreeItem[]) => void;
   sortable?: boolean;
+  selectedId?: string | null;
+  onSelectedIdChange?: (id: string) => void;
+  collapsedIds?: ReadonlySet<string>;
+  onCollapsedIdsChange?: (ids: Set<string>) => void;
+  renderItem?: (item: TreeItem) => React.ReactNode;
+  /** Additional row attributes and handlers. Prevent default to override a key. */
+  getItemProps?: (item: TreeItem) => TreeItemProps;
 }
 type DropTarget = { id: string; position: DropPosition };
 type Drag = { id: string; pointerId: number; x: number; y: number; active: boolean; target: DropTarget | null; handle: HTMLButtonElement };
 
-export function Tree({ items: controlledItems, defaultItems = [], onItemsChange, sortable = false, className, "aria-label": label = "Tree", ...props }: TreeProps) {
+export function Tree({ items: controlledItems, defaultItems = [], onItemsChange, sortable = false, selectedId: controlledSelectedId, onSelectedIdChange, collapsedIds, onCollapsedIdsChange, renderItem, getItemProps, className, "aria-label": label = "Tree", ...props }: TreeProps) {
   const [localItems, setLocalItems] = React.useState(defaultItems);
   const items = controlledItems ?? localItems;
-  const [collapsed, setCollapsed] = React.useState(() => new Set<string>());
+  const [localCollapsed, setLocalCollapsed] = React.useState(() => new Set<string>());
+  const collapsed = collapsedIds ?? localCollapsed;
+  function setCollapsed(update: (previous: ReadonlySet<string>) => Set<string>) {
+    const next = update(collapsed);
+    if (collapsedIds === undefined) setLocalCollapsed(next);
+    onCollapsedIdsChange?.(next);
+  }
   let collapsedDepth = Infinity;
   const visible = flattenTree(items).filter((item) => {
     if (item.depth > collapsedDepth) return false;
@@ -28,7 +42,8 @@ export function Tree({ items: controlledItems, defaultItems = [], onItemsChange,
     return true;
   });
   const [selected, setSelected] = React.useState<string | null>(null);
-  const selectedId = visible.some((item) => item.id === selected) ? selected : visible[0]?.id;
+  const selection = controlledSelectedId === undefined ? selected : controlledSelectedId;
+  const selectedId = visible.some((item) => item.id === selection) ? selection : visible[0]?.id;
   const [grabbed, setGrabbed] = React.useState<string | null>(null);
   const [drop, setDrop] = React.useState<DropTarget | null>(null);
   const [announcement, announce] = React.useState("");
@@ -93,8 +108,12 @@ export function Tree({ items: controlledItems, defaultItems = [], onItemsChange,
     announce(message);
   }
   function select(id: string) {
-    setSelected(id);
-    rows.current.get(id)?.focus();
+    const row = rows.current.get(id);
+    if (row && document.activeElement !== row) row.focus();
+    else {
+      setSelected(id);
+      if (selectedId !== id) onSelectedIdChange?.(id);
+    }
   }
   function keyDown(event: React.KeyboardEvent, item: TreeItem) {
     if (event.key === " " && sortable) {
@@ -122,7 +141,7 @@ export function Tree({ items: controlledItems, defaultItems = [], onItemsChange,
       }
       return;
     }
-    if (childrenOf(items, item.id).length && (
+    if ((item.isBranch || childrenOf(items, item.id).length) && (
       (event.key === "ArrowLeft" && !collapsed.has(item.id)) ||
       (event.key === "ArrowRight" && collapsed.has(item.id))
     )) {
@@ -133,8 +152,9 @@ export function Tree({ items: controlledItems, defaultItems = [], onItemsChange,
       });
       return;
     }
+    if (event.key === "ArrowLeft" || event.key === "ArrowRight") return;
     const index = visible.findIndex((node) => node.id === item.id);
-    const target = event.key === "Home" ? visible[0] : event.key === "End" ? visible.at(-1) : event.key === "ArrowUp" ? visible[index - 1] : event.key === "ArrowDown" ? visible[index + 1] : event.key === "ArrowRight" ? childrenOf(items, item.id)[0] : items.find((node) => node.id === item.parentId);
+    const target = event.key === "Home" ? visible[0] : event.key === "End" ? visible.at(-1) : event.key === "ArrowUp" ? visible[index - 1] : visible[index + 1];
     if (target) select(target.id);
   }
   function findTarget(event: React.PointerEvent): DropTarget | null {
@@ -173,12 +193,18 @@ export function Tree({ items: controlledItems, defaultItems = [], onItemsChange,
   function renderItems(parentId: string | null, depth = 0): React.ReactNode {
     const siblings = childrenOf(items, parentId);
     return siblings.map((item, index) => {
-      const hasChildren = childrenOf(items, item.id).length > 0;
+      const hasChildren = item.isBranch || childrenOf(items, item.id).length > 0;
       const open = !collapsed.has(item.id);
       const groupId = `${instructionId}-${encodeURIComponent(item.id)}`;
       const target = sortable && drop?.id === item.id ? drop.position : null;
+      const extra = getItemProps?.(item);
       const rowProps: React.ComponentProps<typeof Button> = {
-        ref: (node) => { if (node) rows.current.set(item.id, node); else rows.current.delete(item.id); },
+        ...extra,
+        ref: (node) => {
+          if (node) rows.current.set(item.id, node); else rows.current.delete(item.id);
+          if (typeof extra?.ref === "function") return extra.ref(node);
+          if (extra?.ref) extra.ref.current = node;
+        },
         role: "treeitem",
         "aria-label": item.label,
         "aria-level": depth + 1,
@@ -189,16 +215,21 @@ export function Tree({ items: controlledItems, defaultItems = [], onItemsChange,
         "aria-selected": selectedId === item.id,
         tabIndex: selectedId === item.id ? 0 : -1,
         className: cn(
-          "group relative w-full min-w-0 justify-start gap-2 transition-none hover:bg-accent hover:text-accent-foreground",
-          !hasChildren && "text-foreground",
+          "group relative w-full min-w-0 justify-start gap-2 border-0 text-foreground shadow-none transition-none focus-visible:ring-0",
           sortable && "touch-none select-none cursor-grab active:cursor-grabbing",
-          selectedId === item.id && "bg-accent text-accent-foreground",
-          sortable && grabbed === item.id && "bg-primary text-primary-foreground",
-          target === "inside" && "ring-2 ring-primary",
+          sortable && grabbed === item.id
+            ? "bg-black text-white hover:bg-black hover:text-white dark:hover:bg-black"
+            : selectedId === item.id
+              ? "bg-neutral-200 text-black hover:bg-neutral-200 hover:text-black dark:hover:bg-neutral-200"
+              : "bg-transparent hover:bg-transparent hover:text-foreground dark:hover:bg-transparent",
+          target === "inside" && "[&_span]:underline",
           target === "before" && "before:absolute before:inset-x-0 before:top-0 before:h-0.5 before:bg-primary",
           target === "after" && "after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:bg-primary",
+          extra?.className,
         ),
         onClick: (event) => {
+          extra?.onClick?.(event);
+          if (event.defaultPrevented) { event.preventBaseUIHandler(); return; }
           if (suppressClick.current) {
             event.preventDefault();
             event.preventBaseUIHandler();
@@ -206,10 +237,20 @@ export function Tree({ items: controlledItems, defaultItems = [], onItemsChange,
           }
           select(item.id);
         },
-        onFocus: () => setSelected(item.id),
-        onBlur: () => { if (!drag.current) setGrabbed(null); },
-        onKeyDown: (event) => { suppressClick.current = false; keyDown(event, item); },
+        onFocus: (event) => {
+          extra?.onFocus?.(event);
+          setSelected(item.id);
+          if (selectedId !== item.id) onSelectedIdChange?.(item.id);
+        },
+        onBlur: (event) => { extra?.onBlur?.(event); if (!drag.current) setGrabbed(null); },
+        onKeyDown: (event) => {
+          suppressClick.current = false;
+          extra?.onKeyDown?.(event);
+          if (!event.defaultPrevented) keyDown(event, item);
+        },
         onKeyUp: (event) => {
+          extra?.onKeyUp?.(event);
+          if (event.defaultPrevented) return;
           if (event.key === " " && sortable && !drag.current) {
             event.preventDefault();
             setGrabbed(null);
@@ -217,6 +258,8 @@ export function Tree({ items: controlledItems, defaultItems = [], onItemsChange,
           }
         },
         onPointerDown: (event) => {
+          extra?.onPointerDown?.(event);
+          if (event.defaultPrevented) return;
           suppressClick.current = false;
           if (!sortable || event.button !== 0 || drag.current) return;
           event.preventDefault();
@@ -224,18 +267,18 @@ export function Tree({ items: controlledItems, defaultItems = [], onItemsChange,
           event.currentTarget.setPointerCapture(event.pointerId);
           drag.current = { id: item.id, pointerId: event.pointerId, x: event.clientX, y: event.clientY, active: false, target: null, handle: event.currentTarget };
         },
-        onPointerMove: pointerMove,
-        onPointerUp: pointerUp,
-        onPointerCancel: cancelDrag,
-        onLostPointerCapture: cancelDrag,
+        onPointerMove: (event) => { extra?.onPointerMove?.(event); if (!event.defaultPrevented) pointerMove(event); },
+        onPointerUp: (event) => { extra?.onPointerUp?.(event); pointerUp(event); },
+        onPointerCancel: (event) => { extra?.onPointerCancel?.(event); cancelDrag(); },
+        onLostPointerCapture: (event) => { extra?.onLostPointerCapture?.(event); cancelDrag(); },
       };
-      const button = <Button {...rowProps} variant={hasChildren ? "ghost" : "link"} size="sm"
+      const button = <Button {...rowProps} variant="ghost" size="sm"
         data-tree-item={item.id} data-depth={depth}
         data-selected={selectedId === item.id ? "" : undefined}
         data-grabbed={sortable && grabbed === item.id ? "" : undefined}
         data-drop-position={target ?? undefined} data-tree-draggable={sortable ? "" : undefined}>
-        {hasChildren ? <><ChevronRightIcon aria-hidden="true" className="transition-transform group-aria-expanded:rotate-90" /><FolderIcon aria-hidden="true" /></> : <FileIcon aria-hidden="true" />}
-        <span className="truncate">{item.label}</span>
+        {renderItem ? renderItem(item) : <>{hasChildren ? <><ChevronRightIcon aria-hidden="true" className="transition-transform group-aria-expanded:rotate-90" /><FolderIcon aria-hidden="true" /></> : <FileIcon aria-hidden="true" />}
+        <span className="truncate">{item.label}</span></>}
       </Button>;
       return <Collapsible key={item.id} open={open} onOpenChange={(nextOpen) => {
         if (suppressClick.current) return;
@@ -257,7 +300,7 @@ export function Tree({ items: controlledItems, defaultItems = [], onItemsChange,
     <div {...props} role="tree" aria-label={label} aria-describedby={[props["aria-describedby"], instructionId].filter(Boolean).join(" ")} className={cn("flex flex-col gap-1", className)}>
       {renderItems(null)}
     </div>
-    <p id={instructionId} className="sr-only">Use up and down to navigate visible rows, left to collapse or go to the parent, right to expand or go to the first child, Home or End to jump.{sortable ? " Hold Space and use up or down to reorder, right to group, left to ungroup. Release Space to finish. Drag rows to move items; Escape cancels a pointer drag." : ""}</p>
+    <p id={instructionId} className="sr-only">Use up and down to navigate visible rows, left to collapse, right to expand, Home or End to jump.{sortable ? " Hold Space and use up or down to reorder, right to group, left to ungroup. Release Space to finish. Drag rows to move items; Escape cancels a pointer drag." : ""}</p>
     <p role="status" className="sr-only" aria-live="polite">{announcement}</p>
   </>;
 }

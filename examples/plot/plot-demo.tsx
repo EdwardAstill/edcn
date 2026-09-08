@@ -16,13 +16,6 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import {
-  Card,
-  CardHeader,
-  CardContent,
-  CardFooter,
-  CardDescription,
-} from "@/components/ui/card";
 import { PlotFunction, PlotSlider } from "@/registry/plot/ui/plot";
 
 export const description =
@@ -53,17 +46,17 @@ export function PlotDemo() {
     ) / observations.length,
   );
   return (
-    <div className="bg-muted/20 p-4 sm:p-6">
-      <Card className="[--card-spacing:--spacing(6)]">
-        <CardHeader className="gap-2">
+    <div>
+      <section className="flex flex-col gap-6">
+        <header className="grid gap-2">
           <h3 className="text-base font-semibold tracking-tight">
             Fit a sine wave
           </h3>
-          <CardDescription>
+          <p className="text-sm text-muted-foreground">
             Adjust the amplitude to bring the model closer to the observations.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+          </p>
+        </header>
+        <div className="min-w-0">
           <ChartContainer
             config={config}
             className="aspect-auto h-[300px] w-full"
@@ -141,8 +134,8 @@ export function PlotDemo() {
               />
             </ComposedChart>
           </ChartContainer>
-        </CardContent>
-        <CardFooter className="grid gap-6 sm:grid-cols-[1fr_auto]">
+        </div>
+        <footer className="grid gap-6 sm:grid-cols-[1fr_auto]">
           <div className="grid w-full gap-5">
             <PlotSlider
               label="Amplitude · A"
@@ -162,8 +155,8 @@ export function PlotDemo() {
               {rmse.toFixed(3)}
             </output>
           </div>
-        </CardFooter>
-      </Card>
+        </footer>
+      </section>
     </div>
   );
 }

@@ -49,8 +49,12 @@ test("default tree navigates and selects but cannot sort", async () => {
   expect(container.querySelector("[data-tree-draggable]")).toBeNull();
   await act(async () => row("a").focus());
   await key("a", "ArrowRight");
+  expect(document.activeElement).toBe(row("a"));
+  await key("a", "ArrowDown");
   expect(document.activeElement).toBe(row("child"));
   await key("child", "ArrowLeft");
+  expect(document.activeElement).toBe(row("child"));
+  await key("child", "ArrowUp");
   expect(document.activeElement).toBe(row("a"));
   await key("a", " ");
   await key("a", "ArrowDown");
@@ -78,17 +82,18 @@ test("held Space reorders, groups and ungroups without losing focus", async () =
   expect(container.querySelector("[data-grabbed]")).toBeNull();
 });
 
-test("normal arrows collapse and expand branches, skip hidden rows, and retain nested collapse state", async () => {
+test.each([false, true])("normal arrows only collapse and expand, skip hidden rows, and retain nested collapse state (sortable=%s)", async (sortable) => {
   let changes = 0;
   const nested = [...items, { id: "grandchild", label: "Grandchild", parentId: "child" }];
-  await mount(<Tree items={nested} onItemsChange={() => changes++} />);
+  await mount(<Tree items={nested} sortable={sortable} onItemsChange={() => changes++} />);
   await act(async () => row("child").focus());
   await key("child", "ArrowLeft");
   expect(row("grandchild") === null).toBe(true);
   expect(row("child").getAttribute("aria-expanded")).toBe("false");
   expect(document.activeElement).toBe(row("child"));
   await key("child", "ArrowLeft");
-  expect(document.activeElement).toBe(row("a"));
+  expect(document.activeElement).toBe(row("child"));
+  await key("child", "ArrowUp");
   await key("a", "ArrowLeft");
   expect(order()).toEqual(["a", "b", "c"]);
   expect(document.activeElement).toBe(row("a"));
@@ -100,11 +105,15 @@ test("normal arrows collapse and expand branches, skip hidden rows, and retain n
   expect(order()).toEqual(["a", "child", "b", "c"]);
   expect(row("a").getAttribute("aria-expanded")).toBe("true");
   await key("a", "ArrowRight");
-  expect(document.activeElement).toBe(row("child"));
+  expect(document.activeElement).toBe(row("a"));
+  await key("a", "ArrowDown");
   await key("child", "ArrowRight");
   expect(row("grandchild") !== null).toBe(true);
   expect(document.activeElement).toBe(row("child"));
   await key("child", "ArrowRight");
+  expect(document.activeElement).toBe(row("child"));
+  await key("child", "ArrowDown");
+  await key("grandchild", "ArrowLeft");
   expect(document.activeElement).toBe(row("grandchild"));
   await key("grandchild", "ArrowRight");
   expect(document.activeElement).toBe(row("grandchild"));
@@ -128,6 +137,8 @@ test("holding Space still groups into a collapsed branch and ungroups while pres
   await key("b", " ", "keyup");
   await key("b", "ArrowUp");
   await key("child", "ArrowLeft");
+  expect(document.activeElement).toBe(row("child"));
+  await key("child", "ArrowUp");
   await key("a", "ArrowLeft");
   expect(row("child") === null).toBe(true);
 });
@@ -255,4 +266,30 @@ test("controlled reparenting restores focus when the owner applies the change la
   await act(async () => root.render(render(next)));
   expect(row("b").dataset.depth).toBe("0");
   expect(document.activeElement === row("b")).toBe(true);
+});
+
+test("controlled selection and expansion compose with custom row content and handlers", async () => {
+  let selected = "a";
+  let collapsed = new Set(["a"]);
+  const selections: string[] = [];
+  const render = () => <Tree items={items} selectedId={selected} collapsedIds={collapsed}
+    onSelectedIdChange={(id) => { selections.push(id); selected = id; }}
+    onCollapsedIdsChange={(ids) => { collapsed = ids; }}
+    renderItem={(item) => <span>Custom {item.label}</span>}
+    getItemProps={(item) => ({ title: item.id, onKeyDown: (event) => { if (event.key === "End") event.preventDefault(); } })} />;
+  await mount(render());
+  expect(row("child")).toBeNull();
+  await act(async () => row("a").focus());
+  await key("a", "ArrowRight");
+  expect(row("child")).toBeNull();
+  expect(collapsed.has("a")).toBe(false);
+  await act(async () => root.render(render()));
+  expect(row("child").textContent).toBe("Custom Child");
+  await key("a", "End");
+  expect(document.activeElement === row("a")).toBe(true);
+  await key("a", "ArrowDown");
+  expect(selections).toEqual(["child"]);
+  await act(async () => root.render(render()));
+  expect(row("child").hasAttribute("data-selected")).toBe(true);
+  expect(row("child").title).toBe("child");
 });

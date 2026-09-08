@@ -2,6 +2,8 @@ export interface TreeNode {
   id: string;
   label: string;
   parentId: string | null;
+  /** Keep folder semantics when children are empty, filtered, or loaded later. */
+  isBranch?: boolean;
 }
 
 export interface FlattenedTreeNode extends TreeNode {

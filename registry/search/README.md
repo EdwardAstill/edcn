@@ -34,13 +34,17 @@ Treat `items` as immutable when updating the component.
 
 Search uses case-insensitive fuzzy subsequences against complete label paths.
 Matching leaves retain their ancestors; matching containers expose their full
-subtrees. Results preserve tree order. Both modes search the entire data set,
-including collapsed containers. Bold rows are direct matches, preferring name
+subtrees. Results preserve tree order. Nested mode searches the entire data set, including collapsed containers.
+Miller mode matches names only in the current column; parent and child lists
+remain unfiltered. A query with no matches keeps the current level and its
+surrounding context. Navigating to a different level clears the query. Bold rows are direct matches, preferring name
 matches over path-only matches. Clearing search restores manual expansion.
 
 | Prop | Purpose |
 | --- | --- |
 | `items: SearchItem<T>[]` | Nested data, required |
+| `showPaneLabels` | Show column and Preview headings (default `true`); accessible pane names remain available |
+| `showModeSwitch` | Show mode buttons (default `true`); set `false` for a dedicated layout |
 | `defaultMode` | `"files"` (default) or `"miller"` |
 | `defaultSelectedId` | Initial selection; ancestors are expanded automatically |
 | `defaultExpandedIds` | Additional containers initially expanded in Files |
@@ -57,19 +61,27 @@ Strings render as text, never HTML. No filesystem access or content fetching is
 performed by this component. All supplied item names/paths are searched in memory.
 
 Use Up/Down in the search input to navigate without leaving it. On rows, Left/Right
-collapse/expand the tree or move between Miller levels; Home/End jump within the
+only collapse/expand the focused tree row, or move between Miller levels; Home/End jump within the
 current list. Enter browses containers or invokes `onOpen` on leaves. Ctrl+Up/Down
 visits direct matches in the current list. Escape clears the query and focuses
-search. Horizontal arrows in the input retain normal text editing behavior.
+search. Typing printable characters from a row appends to search and focuses the input. Tab and Shift+Tab cycle only direct matches during nested search, skipping ancestor rows included for context; Up/Down still visits every visible row. Without a query, Tab cycles all visible results; Escape then Shift+Tab leaves the widget. Horizontal arrows in the input retain normal text editing behavior.
 
 Files mode places the preview beside results on desktop and below them on small
-screens. Miller mode always uses three panes: parent items on the left, the
+screens. Miller mode uses parent items on the left, the
 current selection and its siblings in the middle, and children or a leaf preview
 on the right. Entering or leaving a container shifts the contents of these fixed
-panes, keeping the selection in the middle. At the root, the parent pane stays
-empty. The three panes remain side by side at every screen size.
+panes, keeping the selection in the middle. At the root, the parent pane is
+hidden. The remaining panes remain side by side at every screen size.
 
-See `examples/search/` for a file library and a typed record browser.
+Drag the dividers to resize adjacent panes. Focus a divider and use Left/Right
+(or Home/End) to resize with the keyboard; double-click for an equal split.
+Each layout retains its widths while navigating or switching modes. Nested
+results stack on small screens, where the vertical resize handle is hidden.
+
+Search sits above the nested list or the current Miller column. Nested results use the shared Tree explorer from `EdwardAstill/edcn/tree`, including its shadcn Collapsible branches, folder/file icons, and selection styling. The shell has no outer card, border, or shadow.
+
+See `examples/search/nested-search-demo.tsx` for a dedicated nested file library and
+`examples/search/miller-search-demo.tsx` for Miller columns with a typed custom preview.
 
 ## Build your own interface
 
@@ -85,12 +97,12 @@ import type { SearchItem } from "@/lib/search/search";
 export function TopicBrowser({ items }: { items: SearchItem[] }) {
   const browser = useNestedSearch({ items, defaultMode: "miller" });
   return <section>
-    <SearchInput browser={browser} placeholder="Find a topic…" />
     <button onClick={() => browser.setMode(browser.mode === "miller" ? "files" : "miller")}>
       Switch view
     </button>
     <SearchResults
       browser={browser}
+      search={<SearchInput browser={browser} placeholder="Find a topic…" />}
       renderItem={({ item }, state) => <span>
         {state.isContainer ? "Topic: " : "Note: "}{item.label}
       </span>}
@@ -105,9 +117,10 @@ export function TopicBrowser({ items }: { items: SearchItem[] }) {
 `SearchInput` accepts native input props, including your own label and placeholder.
 Its change and keyboard handlers compose with yours; `preventDefault()` skips
 the built-in handler. `SearchResults` owns the default tree/three-pane layout;
-its optional `preview` is any React node. `SearchPreview` is only an aside shell:
+its optional `search` slot sits above the current list and `preview` accepts any React node. `SearchPreview` is only an aside shell:
 you control its headings, actions, content, and empty states. All three pieces
-accept `className`. They require no context provider.
+accept `className`. `SearchPaneDivider` is also exported for custom layouts;
+pass a `ratio` and `onRatioChange` and place it between the two pane elements. They require no context provider.
 
 `renderItem(entry, state)` replaces the entire row interior while the outer row
 retains selection, accessibility, and keyboard behavior. State contains
@@ -130,5 +143,4 @@ For a completely custom layout, use the hook directly:
   preserve the returned refs and handlers. `getItemState(entry)` provides row
   state for your own styling. In tree mode, `getListProps()` needs no index.
 
-The course browser in `examples/search/composed-search-demo.tsx` demonstrates
-custom rows, a separate toolbar, and a preview without file-specific framing.
+The composition above demonstrates custom rows and a preview without file-specific framing; these slots work with any data and do not depend on the examples.

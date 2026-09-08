@@ -2,7 +2,7 @@
 
 import { NestedSearch, type SearchItem } from "@/registry/search/components/nested-search";
 
-export const description = "The same browser for nested records, using a custom preview for each observation.";
+export const description = "Miller columns with parent context, search above the current list, and a custom observation preview.";
 
 type Observation = { species: string; count: number; habitat: string; notes: string };
 const items: SearchItem<Observation>[] = [
@@ -15,11 +15,11 @@ const items: SearchItem<Observation>[] = [
   ] },
 ];
 
-export function RecordSearchDemo() {
-  return <NestedSearch items={items} defaultMode="miller" defaultSelectedId="swan" aria-label="Field observations"
+export function MillerSearchDemo() {
+  return <NestedSearch items={items} defaultMode="miller" showModeSwitch={false} showPaneLabels={false} defaultSelectedId="swan" aria-label="Field observations"
     renderPreview={(item) => item.data && <div className="mt-6 space-y-6">
       <p className="text-sm italic text-muted-foreground">{item.data.species}</p>
-      <dl className="grid grid-cols-2 gap-4 rounded-lg border p-4">
+      <dl className="grid grid-cols-2 gap-4">
         <div><dt className="text-xs text-muted-foreground">Observed</dt><dd className="mt-1 text-2xl font-semibold">{item.data.count}</dd></div>
         <div><dt className="text-xs text-muted-foreground">Habitat</dt><dd className="mt-2 text-sm">{item.data.habitat}</dd></div>
       </dl>

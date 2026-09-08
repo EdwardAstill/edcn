@@ -13,23 +13,25 @@ export type { SearchMode } from "@/registry/search/hooks/use-nested-search";
 
 export interface NestedSearchProps<T = unknown> extends UseNestedSearchOptions<T> {
   renderItem?: SearchItemRenderer<T>;
+  showModeSwitch?: boolean;
+  showPaneLabels?: boolean;
   /** Called for leaves only. Use SearchPreview directly to replace the entire preview. */
   renderPreview?: (item: SearchItem<T>) => React.ReactNode;
   className?: string;
   "aria-label"?: string;
 }
 
-export function NestedSearch<T>({ renderItem, renderPreview, className, "aria-label": label = "Search library", ...options }: NestedSearchProps<T>) {
+export function NestedSearch<T>({ renderItem, renderPreview, showModeSwitch = true, showPaneLabels = true, className, "aria-label": label = "Search library", ...options }: NestedSearchProps<T>) {
   const browser = useNestedSearch(options);
   const { mode, query, selected, entries, searching } = browser;
   const { onOpen } = options;
   const prefix = React.useId();
 
   const contentPreview = <SearchPreview>
-        <div className="flex items-center justify-between gap-2 border-b px-4 py-2.5">
-          <span className="text-xs font-medium text-muted-foreground">Preview</span>
+        {(showPaneLabels || (selected && onOpen && !selected.item.children)) && <div className="flex items-center justify-between gap-2 border-b px-4 py-2.5">
+          {showPaneLabels && <span className="text-xs font-medium text-muted-foreground">Preview</span>}
           {selected && onOpen && !selected.item.children && <Button size="sm" variant="ghost" onClick={() => onOpen(selected.item)}>Open <ChevronRight /></Button>}
-        </div>
+        </div>}
         <div className="min-h-0 flex-1 overflow-auto p-5" key={selected?.item.id}>
           {selected ? <>
             <p className="mb-2 break-all font-mono text-xs text-muted-foreground">{selected.path}</p>
@@ -43,23 +45,22 @@ export function NestedSearch<T>({ renderItem, renderPreview, className, "aria-la
         </div>
       </SearchPreview>;
 
-  return <section aria-label={label} className={cn("overflow-hidden rounded-xl border bg-background text-foreground shadow-sm", className)}>
-    <header className="flex flex-wrap items-center justify-between gap-3 border-b px-4 py-3">
+  return <section aria-label={label} className={cn("overflow-hidden bg-background text-foreground", className)}>
+    {showModeSwitch && <header className="flex flex-wrap items-center justify-between gap-3 border-b px-4 py-3">
       <div className="flex items-center gap-2 text-sm font-medium"><Search aria-hidden="true" className="size-4 text-muted-foreground" />{label}</div>
       <div role="group" aria-label="Browse mode" className="flex gap-1 rounded-lg bg-muted p-1">
         <Button size="sm" variant={mode === "files" ? "outline" : "ghost"} aria-pressed={mode === "files"} onClick={() => browser.setMode("files")}><ListTree />Files</Button>
         <Button size="sm" variant={mode === "miller" ? "outline" : "ghost"} aria-pressed={mode === "miller"} onClick={() => browser.setMode("miller")}><Columns3 />Miller columns</Button>
       </div>
-    </header>
-    <div className="flex items-center gap-2 border-b px-4 py-2">
+    </header>}
+    <SearchResults browser={browser} showPaneLabels={showPaneLabels} renderItem={renderItem} preview={contentPreview} search={<div className="flex items-center gap-2 border-b px-4 py-2">
       <Search aria-hidden="true" className="size-4 shrink-0 text-muted-foreground" />
       <SearchInput browser={browser} aria-describedby={`${prefix}-help`} />
       {query && <Button size="icon-sm" variant="ghost" aria-label="Clear search" onClick={() => { browser.setQuery(""); browser.focusSearch(); }}><X /></Button>}
-      <span role="status" className="shrink-0 text-xs tabular-nums text-muted-foreground">{searching ? `${browser.matchCount} matches` : `${entries.length} items`}</span>
-    </div>
-    <SearchResults browser={browser} renderItem={renderItem} preview={contentPreview} />
+      <span role="status" className="shrink-0 text-xs tabular-nums text-muted-foreground">{searching ? `${browser.matchCount} matches` : `${mode === "miller" ? browser.columns[1].items.length : entries.length} items`}</span>
+    </div>} />
     <footer id={`${prefix}-help`} className="flex flex-wrap gap-x-5 gap-y-1 border-t bg-muted/20 px-4 py-2.5 text-xs text-muted-foreground">
-      <span>↑ ↓ Navigate</span><span>← → Browse from a row</span><span>Enter {onOpen ? "Open" : "Browse"}</span><span>Esc Clear search</span>
+      <span>Type to search</span><span>↑ ↓ Navigate</span><span>Tab / Shift+Tab {mode === "files" && searching ? "Cycle matches" : "Cycle results"}</span><span>← → Browse from a row</span><span>Enter {onOpen ? "Open" : "Browse"}</span><span>Esc Clear search</span>
     </footer>
   </section>;
 }

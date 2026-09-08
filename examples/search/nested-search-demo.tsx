@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { NestedSearch, type SearchItem } from "@/registry/search/components/nested-search";
 
-export const description = "Search a nested library with file-style results or Miller columns. Your selection and preview travel with you.";
+export const description = "Search a collapsible library with a nested list on the left and content preview on the right.";
 
 const items: SearchItem[] = [
   { id: "research", label: "Research", description: "Notes, experiments, and ideas worth keeping.", children: [
@@ -31,7 +31,7 @@ const items: SearchItem[] = [
 export function NestedSearchDemo() {
   const [opened, setOpened] = useState<string>();
   return <div className="mx-auto w-full max-w-6xl space-y-3">
-    <NestedSearch items={items} defaultSelectedId="field-notes" aria-label="Library" onOpen={(item) => setOpened(item.label)} />
-    <p className="text-xs text-muted-foreground" role="status">{opened ? `Opened ${opened}` : 'Try “field”, “src”, or “research/ecology”. Switch views to explore the same selection.'}</p>
+    <NestedSearch items={items} showModeSwitch={false} defaultSelectedId="field-notes" aria-label="Library" onOpen={(item) => setOpened(item.label)} />
+    <p className="text-xs text-muted-foreground" role="status">{opened ? `Opened ${opened}` : 'Try “field”, “src”, or “research/ecology”. Type to search, use arrows to navigate, or Tab to cycle through results.'}</p>
   </div>;
 }
