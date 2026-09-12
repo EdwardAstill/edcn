@@ -2,7 +2,9 @@
 
 Standalone, uncontrolled quiz UI for React 19. It renders information steps,
 single-choice, multiple-choice, true/false, and free-text questions and reports a
-graded result when an attempt is complete.
+graded result when an attempt is complete. Readers can click the numbered question
+grid to jump directly to any question without losing answers. Results become
+available once every question is graded, regardless of the order answered.
 
 ## Organization
 
@@ -40,6 +42,10 @@ import type { QuizDefinition, QuizResult } from "@/components/quiz/lib/model";
 ```
 
 In React Server Component frameworks, render `Quiz` from a Client Component.
+
+Questions accept an optional positive integer `index` (for example, `index: 8`).
+The grid, active question header (`Question 8`), and results use that index.
+Without it, numbering starts at 1 and counts questions only, excluding information steps.
 
 ## Model and completion result
 

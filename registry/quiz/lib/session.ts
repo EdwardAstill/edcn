@@ -18,6 +18,7 @@ export type QuizSessionAction =
   | { type: "answer"; itemId: string; answer: SubmittedAnswer }
   | { type: "toggle-hint"; itemId: string }
   | { type: "submit"; itemId: string }
+  | { type: "jump-to"; itemId: string }
   | { type: "go-to"; itemId: string }
   | { type: "complete" }
   | { type: "restart" };
@@ -108,6 +109,10 @@ export function reduceQuizSession(
           [action.itemId]: gradeAnswer(question, submitted),
         },
       };
+    }
+    case "jump-to": {
+      if (!findQuestion(definition, action.itemId)) return state;
+      return { ...state, activeItemId: action.itemId };
     }
     case "go-to": {
       const currentIndex = definition.items.findIndex(

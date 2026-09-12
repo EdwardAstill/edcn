@@ -91,7 +91,7 @@ export function runQuizContract(renderQuiz: RenderQuiz): void {
       });
     const container = await mount(render());
 
-    expect(container.textContent).toContain("Step 1 of 3");
+    expect(container.textContent).toContain("Question 1");
     expect(findButton(container, "Check answer").disabled).toBe(true);
     const firstStep = activeStep(container);
     expect(firstStep.dataset.quizStep).toBe("q-single");
@@ -742,7 +742,7 @@ export function runQuizContract(renderQuiz: RenderQuiz): void {
     await act(async () => findButton(first, "View results").click());
     const firstHeading = findHeading(first, "One question: results");
     expect(document.activeElement).toBe(firstHeading);
-    expect(second.textContent).toContain("Step 1 of 1");
+    expect(second.textContent).toContain("Question 1");
 
     await act(async () => findButton(first, "Restart quiz").click());
     expect(document.activeElement).toBe(activeStep(first));
