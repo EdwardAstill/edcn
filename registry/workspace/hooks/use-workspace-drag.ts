@@ -33,6 +33,7 @@ interface WorkspaceDragContextValue {
   ): void;
   clearDropTarget(): void;
   endDrag(): void;
+  trackPointer(document: Document, pointerId: number, onMove: (event: PointerEvent) => void): void;
 }
 
 const WorkspaceDragContext =
@@ -44,6 +45,8 @@ export function WorkspaceDragProvider({
   children: React.ReactNode;
 }) {
   const [drag, setDrag] = React.useState<WorkspaceDragInfo | null>(null);
+  const stopPointer = React.useRef<(() => void) | null>(null);
+  React.useEffect(() => () => stopPointer.current?.(), []);
   const [dropTarget, setDropTarget] =
     React.useState<WorkspaceDropTarget | null>(null);
 
@@ -70,6 +73,27 @@ export function WorkspaceDragProvider({
       endDrag() {
         setDrag(null);
         setDropTarget(null);
+      },
+      trackPointer(document, pointerId, onMove) {
+        stopPointer.current?.();
+        const move = (event: PointerEvent) => {
+          if (event.pointerId === pointerId) onMove(event);
+        };
+        const end = (event: PointerEvent) => {
+          if (event.pointerId === pointerId) stop();
+        };
+        const stop = () => {
+          document.removeEventListener("pointermove", move);
+          document.removeEventListener("pointerup", end);
+          document.removeEventListener("pointercancel", end);
+          document.defaultView?.removeEventListener("blur", stop);
+          stopPointer.current = null;
+        };
+        stopPointer.current = stop;
+        document.addEventListener("pointermove", move);
+        document.addEventListener("pointerup", end);
+        document.addEventListener("pointercancel", end);
+        document.defaultView?.addEventListener("blur", stop);
       },
     }),
     [drag, dropTarget],

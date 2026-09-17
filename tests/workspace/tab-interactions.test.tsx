@@ -1,4 +1,4 @@
-import { afterAll, afterEach, beforeAll, expect, test } from "bun:test";
+import { afterAll, afterEach, beforeAll, expect, spyOn, test } from "bun:test";
 import { act } from "react";
 import type { Root } from "react-dom/client";
 import { WorkspaceProvider, useWorkspaceState } from "@/registry/workspace/hooks/use-workspace";
@@ -43,6 +43,70 @@ function tab(title: string) {
 async function doubleClick(element: HTMLElement) {
   await act(async () => element.dispatchEvent(new MouseEvent("dblclick", { bubbles: true })));
 }
+
+async function pointer(target: EventTarget, type: string, x: number, y: number, ctrlKey = false) {
+  const event = new MouseEvent(type, { bubbles: true, cancelable: true, clientX: x, clientY: y, ctrlKey });
+  Object.defineProperty(event, "pointerId", { value: 1 });
+  await act(async () => { target.dispatchEvent(event); });
+}
+
+test.each(["pointerup", "pointercancel", "blur"])("Ctrl-drag follows the cursor and stops on %s", async (finish) => {
+  const initial = createInitialState({ views: [
+    { type: "editor", title: "First" },
+    { type: "editor", title: "Second" },
+  ] });
+  const [firstId, secondId] = Object.keys(initial.views);
+  const store = createWorkspaceStore(initial);
+  await mount(store);
+
+  await act(async () => tab("Second").dispatchEvent(new MouseEvent("dragstart", {
+    bubbles: true, cancelable: true,
+  })));
+  expect(store.getState()).toBe(initial);
+
+  await pointer(tab("Second"), "pointerdown", 200, 100, true);
+  await pointer(document, "pointermove", 201, 100);
+  expect(store.getState()).toBe(initial);
+
+  const measure = spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(() => {
+    const surface = Object.values(store.getState().floating)[0];
+    return { left: (surface?.x ?? 0) + 100, top: (surface?.y ?? 0) + 60, width: 120, height: 30 } as DOMRect;
+  });
+  try {
+    await pointer(document, "pointermove", 220, 120);
+    const state = store.getState();
+    const surfaces = Object.values(state.floating);
+    expect(surfaces).toHaveLength(1);
+    expect(state.stacks[surfaces[0].stackId].viewIds).toEqual([secondId]);
+    expect(state.stacks[initial.activeStackId!].viewIds).toEqual([firstId]);
+    expect(surfaces[0].x).toBe(60);
+    expect(surfaces[0].y).toBe(45);
+
+    await pointer(document, "pointermove", 300, 190);
+    const moved = store.getState().floating[surfaces[0].id];
+    expect(moved.x).toBe(140);
+    expect(moved.y).toBe(115);
+    if (finish === "blur") {
+      await act(async () => { window.dispatchEvent(new Event("blur")); });
+    } else {
+      await pointer(document, finish, 300, 190);
+    }
+    await pointer(document, "pointermove", 400, 250);
+    expect(store.getState().floating[surfaces[0].id]).toBe(moved);
+  } finally {
+    measure.mockRestore();
+  }
+});
+
+test("Ctrl-drag respects pinned tabs", async () => {
+  const initial = createInitialState({ views: [{ type: "editor", title: "Pinned", pinned: true }] });
+  const store = createWorkspaceStore(initial);
+  await mount(store);
+  await pointer(tab("Pinned"), "pointerdown", 200, 100, true);
+  await pointer(document, "pointermove", 250, 150);
+  await pointer(document, "pointerup", 250, 150);
+  expect(store.getState()).toBe(initial);
+});
 
 test("double-click floats only the clicked tab and docks it on the next double-click", async () => {
   const initial = createInitialState({ views: [

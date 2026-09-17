@@ -20,14 +20,14 @@ function Demo({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col gap-2">
-      <div className="flex items-baseline justify-between gap-4">
-        <h2 className="text-lg font-semibold tracking-tight">{title}</h2>
+    <div className="flex min-w-0 flex-col gap-5">
+      <div className="flex max-w-3xl flex-col gap-2">
+        <h2 className="text-xl font-semibold tracking-tight">{title}</h2>
         {description && (
-          <p className="text-muted-foreground text-sm">{description}</p>
+          <p className="text-sm leading-6 text-muted-foreground">{description}</p>
         )}
       </div>
-      <div className="relative min-h-[420px] overflow-hidden">
+      <div className="relative min-h-[420px] overflow-hidden rounded-xl border bg-background p-3 sm:p-6">
         {children}
       </div>
     </div>
@@ -46,9 +46,9 @@ function CodePanel({
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <details open={defaultOpen} className="group">
-      <summary className="flex cursor-pointer items-center justify-between px-4 py-2.5 text-sm select-none hover:bg-muted/50">
-        <code className="text-muted-foreground">{file.path}</code>
+    <details open={defaultOpen} className="group min-w-0">
+      <summary className="flex cursor-pointer items-center justify-between gap-4 bg-muted/30 px-4 py-3 text-sm select-none transition-colors hover:bg-muted/60 focus-visible:outline-2 focus-visible:outline-ring focus-visible:-outline-offset-2">
+        <code className="min-w-0 break-all text-xs text-muted-foreground">{file.path}</code>
         <span className="text-muted-foreground/60 text-xs group-open:hidden">
           show
         </span>
@@ -85,7 +85,7 @@ function CodePanel({
 
 function BlockSection({ demo }: { demo: BlockDemo }) {
   return (
-    <section className="flex flex-col gap-3">
+    <section className="flex min-w-0 flex-col gap-4">
       <Demo title={demo.title} description={demo.description}>
         {demo.Component ? (
           <demo.Component />
@@ -96,9 +96,11 @@ function BlockSection({ demo }: { demo: BlockDemo }) {
           </p>
         )}
       </Demo>
-      {demo.files.map((file, index) => (
-        <CodePanel key={file.path} file={file} defaultOpen={index === 0} />
-      ))}
+      <div className="min-w-0 overflow-hidden rounded-xl border divide-y">
+        {demo.files.map((file, index) => (
+          <CodePanel key={file.path} file={file} defaultOpen={index === 0} />
+        ))}
+      </div>
     </section>
   );
 }
@@ -107,22 +109,24 @@ function App() {
   const areas = [...new Set(blockDemos.map((demo) => demo.area))];
 
   return (
-    <div className="mx-auto flex min-h-svh max-w-6xl flex-col gap-10 px-4 py-8 antialiased">
-      <header className="flex flex-col gap-1">
-        <h1 className="text-3xl font-bold tracking-tight">edcn registry</h1>
-        <p className="text-muted-foreground">
+    <div className="mx-auto flex min-h-svh max-w-6xl flex-col px-4 pb-16 antialiased sm:px-8">
+      <header className="flex flex-col gap-4 border-b py-12 sm:py-16">
+        <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">edcn registry</h1>
+        <p className="max-w-2xl text-base leading-7 text-muted-foreground sm:text-lg">
           A custom registry for distributing code using shadcn.
         </p>
       </header>
-      <Tabs defaultValue={areas[0]} className="flex-1 gap-8">
-        <TabsList aria-label="Registry areas">
-          {areas.map((area) => (
-            <TabsTrigger key={area} value={area}>
-              {area.charAt(0).toUpperCase() + area.slice(1)}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-        <main>
+      <Tabs defaultValue={areas[0]} className="min-w-0 flex-1 gap-10 pt-6">
+        <div className="overflow-x-auto pb-1">
+          <TabsList aria-label="Registry areas">
+            {areas.map((area) => (
+              <TabsTrigger key={area} value={area}>
+                {area.charAt(0).toUpperCase() + area.slice(1)}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </div>
+        <main className="min-w-0">
           {areas.map((area) => (
             <TabsContent
               key={area}
@@ -130,7 +134,7 @@ function App() {
               keepMounted
               className="data-[hidden]:hidden"
             >
-              <div className="flex flex-col gap-10">
+              <div className="flex flex-col gap-14 sm:gap-16">
                 {blockDemos
                   .filter((demo) => demo.area === area)
                   .sort((a, b) => Number(!!b.Component) - Number(!!a.Component))

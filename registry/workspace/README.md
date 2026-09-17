@@ -173,6 +173,10 @@ surfaces host a single unsplittable stack.
 
 ## Floating windows
 
+Hold Ctrl and drag a tab to tear it into a floating window. The cursor stays
+centered on the tab, and the window follows until you release the pointer.
+Pinned tabs stay in place.
+
 Double-click a docked tab to float it, or a floating/popout tab to dock it
 back into the tiled layout. Only the clicked tab moves; pinned tabs stay on
 their current surface.
