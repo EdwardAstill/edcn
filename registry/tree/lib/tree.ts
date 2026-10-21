@@ -4,6 +4,8 @@ export interface TreeNode {
   parentId: string | null;
   /** Keep folder semantics when children are empty, filtered, or loaded later. */
   isBranch?: boolean;
+  /** Prevent moving this item; children can still move in and out. */
+  locked?: boolean;
 }
 
 export interface FlattenedTreeNode extends TreeNode {
@@ -60,6 +62,7 @@ export function reparentNode(
 
   if (
     !draggedNode ||
+    draggedNode.locked ||
     draggedId === newParentId ||
     (newParentId && !nodes.some((node) => node.id === newParentId)) ||
     (newParentId && wouldCreateCycle(nodes, draggedId, newParentId))
@@ -102,7 +105,7 @@ export function reorderNode(
 ) {
   const draggedNode = nodes.find((node) => node.id === draggedId);
 
-  if (!draggedNode) return nodes;
+  if (!draggedNode || draggedNode.locked) return nodes;
 
   const siblings = childrenOf(nodes, draggedNode.parentId);
   const currentOrder = siblings.findIndex((node) => node.id === draggedId);

@@ -33,13 +33,37 @@ Rows have no borders or focus rings: selection is gray, and a grabbed row is bla
 
 Use `className`, `[data-selected]`, `[data-grabbed]`, and `[data-drop-position]` for styling. The example in `examples/tree/tree-demo.tsx` demonstrates browsing and controlled sorting. Branches are items with children; leaves become branches when another item is nested inside them. The kit ships its component and pure tree helpers, and installs the official `button` and `collapsible` basics plus `lucide-react` as dependencies. It has no drag-and-drop package dependency.
 
+## Move locks
+
+Set `locked: true` on any `TreeItem` to prevent moving that item:
+
+```tsx
+const items: TreeItem[] = [
+  { id: "src", label: "src", parentId: null, isBranch: true, locked: true },
+  { id: "package", label: "package.json", parentId: null, locked: true },
+];
+```
+
+Locked rows cannot be dragged, reordered, nested, or moved out with the keyboard.
+They remain selectable and folders still expand/collapse. Locks are not inherited:
+unlocked children can move in and out, and locked rows remain drop targets.
+Other siblings can move around them; moving an ancestor still carries its subtree.
+The pure `reparentNode`, `reorderNode`, and `dropNode` helpers enforce the same rule.
+Updating an item's lock during a gesture cancels its active move.
+
+Locked rows show a lock icon, expose `[data-locked]` for styling, and include an
+accessible movement-lock description. Try **Tree → Tree Locked Demo** in the
+preview (`examples/tree/tree-locked-demo.tsx`): `src` and `package.json` start
+locked, and the controls toggle the selected item's lock or reset the items.
+
 ## Controlled composition
 
 Use `selectedId` / `onSelectedIdChange` and `collapsedIds` / `onCollapsedIdsChange`
 to connect an external selection and expansion model. `collapsedIds` is a set of
-closed item IDs. `renderItem(item)` replaces row contents, and `getItemProps(item)`
-adds row attributes, refs, and event handlers; prevent default in a key handler
-to override built-in navigation. The tree still owns row styling and structure.
+closed item IDs. `renderItem(item)` replaces row contents except for the lock
+indicator, and `getItemProps(item)` adds row attributes, refs, and event handlers;
+prevent default in a key handler to override built-in navigation. The tree still
+owns row styling and structure.
 Mark an item `isBranch: true` to retain folder semantics when its children are
 empty, filtered out, or loaded later. Nested search uses these controls to render
 the same Explorer with search filtering and match-only Tab navigation.

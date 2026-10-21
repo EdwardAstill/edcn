@@ -2,7 +2,7 @@ import { afterAll, afterEach, beforeAll, expect, test } from "bun:test";
 import { act, type ReactElement } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { Tree, type TreeItem } from "@/registry/tree/components/tree";
-import { dropNode, flattenTree } from "@/registry/tree/lib/tree";
+import { dropNode, flattenTree, reorderNode, reparentNode } from "@/registry/tree/lib/tree";
 import { installHappyDom } from "../quiz/happy-dom";
 
 const items: TreeItem[] = [
@@ -41,6 +41,63 @@ test("drop placement preserves branches, sibling order, and the original data", 
   expect(dropNode(items, "a", "child", "after")).toBe(items);
   expect(dropNode(items, "a", "a", "inside")).toBe(items);
   expect(items).toEqual(before);
+});
+
+test.each(["a", "c"])("locked items reject every move operation (%s)", (id) => {
+  const locked = items.map((item) => item.id === id ? { ...item, locked: true } : item);
+  const before = structuredClone(locked);
+  expect(reparentNode(locked, id, "b")).toBe(locked);
+  expect(reparentNode(locked, id, null, 1)).toBe(locked);
+  expect(reorderNode(locked, id, 1)).toBe(locked);
+  for (const position of ["before", "inside", "after"] as const) {
+    expect(dropNode(locked, id, "b", position)).toBe(locked);
+  }
+  expect(locked).toEqual(before);
+});
+
+test("folder locks do not restrict their children, destinations, or other siblings", () => {
+  const locked = items.map((item) => item.id === "a" ? { ...item, locked: true, isBranch: true } : item);
+  const inside = dropNode(locked, "b", "a", "inside");
+  expect(inside.find((item) => item.id === "b")?.parentId).toBe("a");
+  const reordered = reorderNode(inside, "b", 0);
+  expect(reordered.map((item) => item.id)).toEqual(["a", "b", "child", "c"]);
+  const outside = reparentNode(reordered, "child", null);
+  expect(outside.find((item) => item.id === "child")?.parentId).toBeNull();
+  const empty = reparentNode(outside, "b", null);
+  expect(dropNode(empty, "b", "a", "inside").find((item) => item.id === "b")?.parentId).toBe("a");
+  expect(dropNode(locked, "c", "a", "before").map((item) => item.id)).toEqual(["c", "a", "child", "b"]);
+  const lockedChild = items.map((item) => item.id === "child" ? { ...item, locked: true } : item);
+  const movedParent = reparentNode(lockedChild, "a", "b");
+  expect(movedParent.find((item) => item.id === "a")?.parentId).toBe("b");
+  expect(movedParent.find((item) => item.id === "child")).toEqual(lockedChild[1]);
+});
+
+test("locked rows remain navigable and collapsible while unlocked children can move in and out", async () => {
+  let changes = 0;
+  const locked = items.map((item) => ({ ...item, locked: item.id === "a" || item.id === "c" }));
+  await mount(<Tree defaultItems={locked} sortable onItemsChange={() => changes++} />);
+  for (const id of ["a", "c"]) {
+    await act(async () => row(id).focus());
+    await key(id, " ");
+    expect(container.querySelector("[data-grabbed]")).toBeNull();
+    await key(id, "ArrowDown");
+    await key(id, " ", "keyup");
+  }
+  expect(changes).toBe(0);
+  expect(order()).toEqual(["a", "child", "b", "c"]);
+  await act(async () => row("a").click());
+  expect(row("child")).toBeNull();
+  await key("a", "ArrowRight");
+  expect(order()).toEqual(["a", "child", "b", "c"]);
+  await act(async () => row("child").focus());
+  await key("child", " ");
+  await key("child", "ArrowLeft");
+  expect(row("child").dataset.depth).toBe("0");
+  await key("child", "ArrowRight");
+  expect(row("child").dataset.depth).toBe("1");
+  expect(document.activeElement).toBe(row("child"));
+  await key("child", " ", "keyup");
+  expect(changes).toBe(2);
 });
 
 test("default tree navigates and selects but cannot sort", async () => {
@@ -143,11 +200,11 @@ test("holding Space still groups into a collapsed branch and ungroups while pres
   expect(row("child") === null).toBe(true);
 });
 
-function setupPointer() {
+function setupPointer(handleId = "a") {
   for (const [index, id] of ["a", "child", "b", "c"].entries()) {
     row(id).getBoundingClientRect = () => ({ left: 0, right: 300, top: index * 40, bottom: (index + 1) * 40, height: 40, width: 300, x: 0, y: index * 40, toJSON() {} });
   }
-  const handle = row("a");
+  const handle = row(handleId);
   let captured = false;
   handle.setPointerCapture = () => { captured = true; };
   handle.hasPointerCapture = () => captured;
@@ -158,6 +215,46 @@ function setupPointer() {
     await act(async () => handle.dispatchEvent(event));
   };
 }
+
+test.each(["a", "c"])("locked rows cannot start pointer moves (%s)", async (id) => {
+  let changes = 0;
+  const locked = items.map((item) => item.id === id ? { ...item, locked: true } : item);
+  await mount(<Tree defaultItems={locked} sortable onItemsChange={() => changes++} />);
+  const pointer = setupPointer(id);
+  await pointer("pointerdown", id === "a" ? 20 : 140);
+  await pointer("pointermove", 100);
+  expect(container.querySelector("[data-grabbed]")).toBeNull();
+  expect(container.querySelector("[data-drop-position]")).toBeNull();
+  await pointer("pointerup", 100);
+  expect(order()).toEqual(["a", "child", "b", "c"]);
+  expect(changes).toBe(0);
+});
+
+test.each(["pointer", "keyboard"])("locking an item cancels an active %s move and unlocking allows a new move", async (input) => {
+  let next: TreeItem[] | undefined;
+  const render = (locked: boolean) => <Tree
+    items={items.map((item) => item.id === "a" ? { ...item, locked } : item)}
+    sortable onItemsChange={(value) => { next = value; }} />;
+  await mount(render(false));
+  const pointer = setupPointer();
+  if (input === "pointer") {
+    await pointer("pointerdown", 20);
+    await pointer("pointermove", 100);
+  } else {
+    await key("a", " ");
+  }
+  expect(row("a").hasAttribute("data-grabbed")).toBe(true);
+  await act(async () => root.render(render(true)));
+  expect(container.querySelector("[data-grabbed]")).toBeNull();
+  expect(container.querySelector("[data-drop-position]")).toBeNull();
+  if (input === "pointer") await pointer("pointerup", 100);
+  else await key("a", "ArrowDown");
+  expect(next).toBeUndefined();
+  await act(async () => root.render(render(false)));
+  await key("a", " ");
+  await key("a", "ArrowDown");
+  expect(next?.map((item) => item.id)).toEqual(["b", "a", "child", "c"]);
+});
 
 test("pointer previews and commits grouping only on release", async () => {
   await mount(<Tree defaultItems={items} sortable />);

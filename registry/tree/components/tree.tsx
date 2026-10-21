@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { ChevronRightIcon, FileIcon, FolderIcon } from "lucide-react";
+import { ChevronRightIcon, FileIcon, FolderIcon, LockIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
@@ -70,8 +70,8 @@ export function Tree({ items: controlledItems, defaultItems = [], onItemsChange,
   }, []);
 
   React.useEffect(() => {
-    if (!sortable) cancelDrag();
-  }, [sortable, cancelDrag]);
+    if (!sortable || items.find((item) => item.id === (drag.current?.id ?? grabbed))?.locked) cancelDrag();
+  }, [sortable, items, grabbed, cancelDrag]);
   React.useEffect(() => {
     function cancel(event: KeyboardEvent) {
       if (event.key === "Escape") {
@@ -118,6 +118,10 @@ export function Tree({ items: controlledItems, defaultItems = [], onItemsChange,
   function keyDown(event: React.KeyboardEvent, item: TreeItem) {
     if (event.key === " " && sortable) {
       event.preventDefault();
+      if (item.locked) {
+        announce(`${item.label} is locked and cannot be moved.`);
+        return;
+      }
       if (!event.repeat && !drag.current) {
         setGrabbed(item.id);
         announce(`${item.label} grabbed. Hold Space and use arrows to move.`);
@@ -194,6 +198,7 @@ export function Tree({ items: controlledItems, defaultItems = [], onItemsChange,
     const siblings = childrenOf(items, parentId);
     return siblings.map((item, index) => {
       const hasChildren = item.isBranch || childrenOf(items, item.id).length > 0;
+      const movable = sortable && !item.locked;
       const open = !collapsed.has(item.id);
       const groupId = `${instructionId}-${encodeURIComponent(item.id)}`;
       const target = sortable && drop?.id === item.id ? drop.position : null;
@@ -207,6 +212,7 @@ export function Tree({ items: controlledItems, defaultItems = [], onItemsChange,
         },
         role: "treeitem",
         "aria-label": item.label,
+        "aria-description": [extra?.["aria-description"], item.locked && "Movement locked."].filter(Boolean).join(" ") || undefined,
         "aria-level": depth + 1,
         "aria-setsize": siblings.length,
         "aria-posinset": index + 1,
@@ -216,8 +222,8 @@ export function Tree({ items: controlledItems, defaultItems = [], onItemsChange,
         tabIndex: selectedId === item.id ? 0 : -1,
         className: cn(
           "group relative w-full min-w-0 justify-start gap-2 border-0 text-foreground shadow-none transition-none focus-visible:ring-0",
-          sortable && "touch-none select-none cursor-grab active:cursor-grabbing",
-          sortable && grabbed === item.id
+          movable && "touch-none select-none cursor-grab active:cursor-grabbing",
+          movable && grabbed === item.id
             ? "bg-black text-white hover:bg-black hover:text-white dark:hover:bg-black"
             : selectedId === item.id
               ? "bg-neutral-200 text-black hover:bg-neutral-200 hover:text-black dark:hover:bg-neutral-200"
@@ -253,6 +259,7 @@ export function Tree({ items: controlledItems, defaultItems = [], onItemsChange,
           if (event.defaultPrevented) return;
           if (event.key === " " && sortable && !drag.current) {
             event.preventDefault();
+            if (grabbed !== item.id || item.locked) return;
             setGrabbed(null);
             announce(`${item.label} released.`);
           }
@@ -261,7 +268,7 @@ export function Tree({ items: controlledItems, defaultItems = [], onItemsChange,
           extra?.onPointerDown?.(event);
           if (event.defaultPrevented) return;
           suppressClick.current = false;
-          if (!sortable || event.button !== 0 || drag.current) return;
+          if (!movable || event.button !== 0 || drag.current) return;
           event.preventDefault();
           select(item.id);
           event.currentTarget.setPointerCapture(event.pointerId);
@@ -275,10 +282,12 @@ export function Tree({ items: controlledItems, defaultItems = [], onItemsChange,
       const button = <Button {...rowProps} variant="ghost" size="sm"
         data-tree-item={item.id} data-depth={depth}
         data-selected={selectedId === item.id ? "" : undefined}
-        data-grabbed={sortable && grabbed === item.id ? "" : undefined}
-        data-drop-position={target ?? undefined} data-tree-draggable={sortable ? "" : undefined}>
+        data-locked={item.locked ? "" : undefined}
+        data-grabbed={movable && grabbed === item.id ? "" : undefined}
+        data-drop-position={target ?? undefined} data-tree-draggable={movable ? "" : undefined}>
         {renderItem ? renderItem(item) : <>{hasChildren ? <><ChevronRightIcon aria-hidden="true" className="transition-transform group-aria-expanded:rotate-90" /><FolderIcon aria-hidden="true" /></> : <FileIcon aria-hidden="true" />}
         <span className="truncate">{item.label}</span></>}
+        {item.locked && <LockIcon aria-hidden="true" className="ml-auto shrink-0" />}
       </Button>;
       return <Collapsible key={item.id} open={open} onOpenChange={(nextOpen) => {
         if (suppressClick.current) return;
